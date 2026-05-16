@@ -79,7 +79,7 @@ export default function MyOrders() {
       // Firma Bilgileri
       doc.setFontSize(9);
       doc.setTextColor(120, 120, 120);
-      doc.text("Artisana Teknoloji A.S.", 120, 32);
+      doc.text("Nexia AI Teknoloji A.S.", 120, 32);
       doc.text("Teknopark Istanbul No: 61", 120, 37);
       doc.text("Vergi No: 6161616161", 120, 42);
 
@@ -135,7 +135,7 @@ export default function MyOrders() {
       doc.text("Bizi tercih ettiginiz icin tesekkur ederiz. Bu belge yapay zeka destekli e-ticaret otomasyonu tarafindan uretilmistir.", 14, 280);
 
       // İndirme
-      doc.save(`Artisana-Fatura-${order._id}.pdf`);
+      doc.save(`Nexia-AI-Fatura-${order._id}.pdf`);
       toast.success('📄 Fatura PDF olarak başarıyla indirildi!');
     } catch (error) {
       console.error("PDF Fatura oluşturulamadı:", error);

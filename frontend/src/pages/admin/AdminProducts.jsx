@@ -171,7 +171,7 @@ export default function AdminProducts() {
                 Fiyat: `${p.fiyat} TL`,
                 Stok: p.stokSayisi,
                 Acik_Artirmada: p.acikArtirmadaMi ? 'Evet' : 'Hayir'
-              })), 'Artisana_Urunler_Raporu'
+              })), 'Nexia_AI_Urunler_Raporu'
             )}
             className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 active:scale-95 transition-all"
           >

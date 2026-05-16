@@ -37,7 +37,7 @@ function Navbar() {
           <div className="flex justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link to="/" className="text-2xl font-black text-indigo-600 tracking-tight">AI Store</Link>
+              <Link to="/" className="text-2xl font-black text-indigo-600 tracking-tight">Nexia AI</Link>
               <div className="hidden sm:ml-8 sm:flex sm:space-x-8">
                 <Link to="/" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
                   Anasayfa
@@ -126,7 +126,7 @@ function Navbar() {
                   {user.rol === 'admin' && (
                     <Link to="/admin" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-indigo-600 bg-indigo-50 font-medium transition-colors">Admin Paneli</Link>
                   )}
-                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-indigo-600 bg-indigo-50 font-medium transition-colors flex items-center gap-2">
+                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-indigo-600 bg-indigo-50 font-medium transition-colors">
                     <div className="w-5 h-5 rounded-full bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-xs">
                       {user.adSoyad.split(' ').map(n => n[0]).join('')}
                     </div>
@@ -160,7 +160,7 @@ function Layout({ children }) {
       <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-gray-400">
-            &copy; 2026 AI E-Ticaret. Tüm Hakları Saklıdır.
+            &copy; 2026 Nexia AI. Tüm Hakları Saklıdır.
           </p>
         </div>
       </footer>

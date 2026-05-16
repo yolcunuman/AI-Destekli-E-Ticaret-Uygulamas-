@@ -165,7 +165,7 @@ export default function Dashboard() {
                 Tutar: `${o.toplamTutar} TL`,
                 Durum: o.siparisDurumu,
                 Tarih: new Date(o.createdAt).toLocaleDateString('tr-TR')
-              })), 'Artisana_Siparis_Raporu'
+              })), 'Nexia_AI_Siparis_Raporu'
             )}
             className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 active:scale-95 transition-all"
           >
@@ -180,7 +180,7 @@ export default function Dashboard() {
                 Urun_Ismi: p.isim,
                 Satis_Adedi: p.satisAdedi,
                 Ciro: `${p.ciro} TL`
-              })), 'Artisana_En_Cok_Satanlar'
+              })), 'Nexia_AI_En_Cok_Satanlar'
             )}
             className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 active:scale-95 transition-all"
           >
