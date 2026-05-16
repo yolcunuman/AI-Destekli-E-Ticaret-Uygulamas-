@@ -126,7 +126,7 @@ function Navbar() {
                   {user.rol === 'admin' && (
                     <Link to="/admin" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-indigo-600 bg-indigo-50 font-medium transition-colors">Admin Paneli</Link>
                   )}
-                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-indigo-600 bg-indigo-50 font-medium transition-colors flex items-center gap-2">
+                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-indigo-600 bg-indigo-50 font-medium transition-colors">
                     <div className="w-5 h-5 rounded-full bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-xs">
                       {user.adSoyad.split(' ').map(n => n[0]).join('')}
                     </div>
