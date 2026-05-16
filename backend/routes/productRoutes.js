@@ -1,10 +1,12 @@
 import express from 'express';
-import { getProducts, getProductById, deleteProduct, createProduct, updateProduct } from '../controllers/productController.js';
+import { getProducts, getProductById, deleteProduct, createProduct, updateProduct, getRecommendations } from '../controllers/productController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.route('/').get(getProducts).post(protect, admin, createProduct);
+// Öneri rotası id parametresinden önce olmalı
+router.route('/recommendations/:id').get(getRecommendations);
 router.route('/:id').get(getProductById).delete(protect, admin, deleteProduct).put(protect, admin, updateProduct);
 
 export default router;

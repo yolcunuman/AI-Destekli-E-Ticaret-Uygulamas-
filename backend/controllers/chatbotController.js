@@ -1,27 +1,11 @@
 import Product from '../models/Product.js';
 import Order from '../models/Order.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Hazır cevap şablonları
-const faqResponses = {
-  iade: 'İade işlemi için siparişinizin teslim tarihinden itibaren 14 gün içinde "Siparişlerim" sayfasından iade talebi oluşturabilirsiniz. Ürünün kullanılmamış ve orijinal ambalajında olması gerekmektedir.',
-  kargo: 'Siparişleriniz genellikle 1-3 iş günü içinde kargoya verilir. Kargo takip numaranız sipariş durumunuz "Kargoda" olduğunda e-posta ile gönderilir.',
-  ödeme: 'Şu anda Kapıda Ödeme seçeneği ile alışveriş yapabilirsiniz. Kredi kartı ile ödeme seçeneği yakında aktif edilecektir.',
-  iletişim: 'Bize destek@aistore.com adresinden veya 0850 123 45 67 numaralı telefondan ulaşabilirsiniz. Çalışma saatlerimiz hafta içi 09:00-18:00 arasındadır.',
-  güvenlik: 'Tüm kişisel verileriniz SSL şifrelemesi ile korunmaktadır. Şifreniz bcrypt algoritması ile hash\'lenerek saklanır.',
-  merhaba: 'Merhaba! 👋 Size nasıl yardımcı olabilirim? Ürün araması yapabilir, sipariş durumunuzu sorgulayabilir veya genel sorularınızı sorabilirsiniz.',
-  selam: 'Selam! 👋 Ben AI Store asistanıyım. Sana nasıl yardımcı olabilirim?',
-};
+// Gemini API başlatma
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MOCK_API_KEY');
 
-// Anahtar kelimeden FAQ yanıtı bul
-const findFaqResponse = (message) => {
-  const lowerMsg = message.toLowerCase();
-  for (const [key, value] of Object.entries(faqResponses)) {
-    if (lowerMsg.includes(key)) return value;
-  }
-  return null;
-};
-
-// @desc    Chatbot ile mesajlaşma
+// @desc    Chatbot ile mesajlaşma (Gemini AI Destekli)
 // @route   POST /api/chatbot
 // @access  Public (opsiyonel auth ile kişisel sorgu)
 export const chat = async (req, res) => {
@@ -32,71 +16,84 @@ export const chat = async (req, res) => {
       return res.json({ reply: 'Lütfen bir mesaj yazınız.', type: 'text' });
     }
 
-    const lowerMsg = message.toLowerCase();
+    // 1. Önce ürün ve sipariş verilerini veritabanından çekelim (AI'a dinamik context sağlamak için)
+    const products = await Product.find({}).limit(30); // Katalogdan örnek 30 ürün
+    const productContext = products.map(p => `- ${p.isim} (${p.kategori}): ${p.fiyat} ₺ (Stok: ${p.stokSayisi})`).join('\n');
 
-    // 1. FAQ kontrolü
-    const faqReply = findFaqResponse(message);
-    if (faqReply) {
-      return res.json({ reply: faqReply, type: 'text' });
-    }
-
-    // 2. Ürün arama
-    const aramaAnahtar = ['arıyorum', 'istiyorum', 'öner', 'bak', 'ara', 'var mı', 'göster'];
-    const isProductSearch = aramaAnahtar.some(k => lowerMsg.includes(k));
-
-    if (isProductSearch) {
-      // Mesajdan arama terimini çıkar
-      const products = await Product.find({
-        $or: [
-          { isim: { $regex: lowerMsg.split(' ').filter(w => w.length > 2).join('|'), $options: 'i' } },
-          { kategori: { $regex: lowerMsg.split(' ').filter(w => w.length > 2).join('|'), $options: 'i' } }
-        ]
-      }).limit(4);
-
-      if (products.length > 0) {
-        return res.json({
-          reply: `Size uygun ${products.length} ürün buldum:`,
-          type: 'products',
-          products: products.map(p => ({
-            _id: p._id,
-            isim: p.isim,
-            fiyat: p.fiyat,
-            resimUrl: p.resimUrl,
-            kategori: p.kategori
-          }))
-        });
-      } else {
-        return res.json({ reply: 'Maalesef aradığınız kriterlere uygun ürün bulamadım. Farklı bir terim ile aramayı deneyebilirsiniz.', type: 'text' });
-      }
-    }
-
-    // 3. Sipariş durumu sorgulama
-    const siparisAnahtar = ['sipariş', 'siparişim', 'kargom', 'nerede', 'durum'];
-    const isOrderQuery = siparisAnahtar.some(k => lowerMsg.includes(k));
-
-    if (isOrderQuery && req.user) {
+    let orderContext = 'Kullanıcı giriş yapmamış veya geçmiş siparişi bulunmuyor.';
+    if (req.user) {
       const lastOrder = await Order.findOne({ kullanici: req.user._id }).sort({ createdAt: -1 });
       if (lastOrder) {
-        return res.json({
-          reply: `Son siparişinizin durumu: **${lastOrder.siparisDurumu}** (${new Date(lastOrder.createdAt).toLocaleDateString('tr-TR')}). Toplam tutar: ${lastOrder.toplamTutar.toLocaleString('tr-TR')} ₺`,
-          type: 'text'
-        });
-      } else {
-        return res.json({ reply: 'Henüz bir siparişiniz bulunmuyor.', type: 'text' });
+        orderContext = `Kullanıcının son siparişi durumu: "${lastOrder.siparisDurumu}", Toplam Tutar: ${lastOrder.toplamTutar} ₺, Sipariş Tarihi: ${new Date(lastOrder.createdAt).toLocaleDateString('tr-TR')}`;
       }
     }
 
-    if (isOrderQuery && !req.user) {
-      return res.json({ reply: 'Sipariş durumunuzu sorgulamak için lütfen giriş yapın.', type: 'text' });
+    // Eğer .env dosyasında GEMINI_API_KEY yoksa, uygulamanın çökmemesi için basit fallback
+    if (!process.env.GEMINI_API_KEY) {
+      const lowerMsg = message.toLowerCase();
+      if (lowerMsg.includes('sipariş') || lowerMsg.includes('kargo')) {
+        return res.json({ reply: `(AI Devre Dışı) ${orderContext}`, type: 'text' });
+      }
+      return res.json({ reply: '(AI Modülü) Lütfen .env dosyasına GEMINI_API_KEY ekleyin. Şu an sistem kısıtlı çalışmaktadır.', type: 'text' });
     }
 
-    // 4. Varsayılan cevap
+    // 2. Gemini AI'a göndereceğimiz Mükemmel Sistem Context'ini (Prompt) hazırlayalım
+    const systemPrompt = `
+      Sen 'AI Store' adlı premium bir e-ticaret sitesinin zeki ve yardımsever yapay zeka asistanısın. 
+      Müşterilere her zaman çok kibar, profesyonel ve kısa/öz cevaplar verirsin. Müşteri sana e-ticaret dışı bir şey sorarsa kibarca reddet.
+      
+      Şu anki mağaza ürünlerimiz (Canlı Katalog Bilgisi):
+      ${productContext}
+
+      Soru soran müşterinin sipariş durumu bilgisi:
+      ${orderContext}
+
+      Müşterinin sorusu: "${message}"
+
+      Lütfen kısa, anlaşılır ve doğrudan yardımcı olacak bir Türkçe cevap ver. Ürün öneriyorsan fiyatıyla birlikte tam ismini yaz.
+    `;
+
+    // 3. Gemini Modelini Çağır
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent(systemPrompt);
+    const responseText = result.response.text();
+
+    // 4. UI tarafı için eşleşen ürünleri çek (Kullanıcı ürün önerisi istediyse kart olarak göstermek için)
+    let matchedProducts = [];
+    const aramaAnahtar = ['arıyorum', 'istiyorum', 'öner', 'bak', 'ara', 'var mı', 'göster', 'laptop', 'telefon', 'kulaklık', 'ürün'];
+    const isProductSearch = aramaAnahtar.some(k => message.toLowerCase().includes(k));
+
+    if (isProductSearch) {
+       matchedProducts = await Product.find({
+        $or: [
+          { isim: { $regex: message.split(' ').filter(w => w.length > 3).join('|'), $options: 'i' } },
+          { kategori: { $regex: message.split(' ').filter(w => w.length > 3).join('|'), $options: 'i' } }
+        ]
+      }).limit(4);
+    }
+
+    if (matchedProducts.length > 0) {
+      return res.json({
+        reply: responseText, // Gemini'nin akıllı metni
+        type: 'products',    // UI kartları göstersin diye tip
+        products: matchedProducts.map(p => ({
+          _id: p._id,
+          isim: p.isim,
+          fiyat: p.fiyat,
+          resimUrl: p.resimUrl,
+          kategori: p.kategori
+        }))
+      });
+    }
+
+    // Ürün eşleşmesi yoksa sadece metin dön
     return res.json({
-      reply: 'Anlayamadım, ama size yardımcı olmak istiyorum! Şunları deneyebilirsiniz:\n• Ürün araması: "laptop arıyorum"\n• Sipariş sorgulama: "siparişim nerede"\n• Sıkça sorulan sorular: "iade", "kargo", "ödeme"',
+      reply: responseText,
       type: 'text'
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Gemini API Hatası:', error);
+    res.status(500).json({ message: 'Chatbot şu an yoğun veya API bağlantı hatası yaşandı.', type: 'text' });
   }
 };
