@@ -1,4 +1,5 @@
 import Review from '../models/Review.js';
+import Product from '../models/Product.js';
 import { analyzeSentiment } from '../utils/sentimentAnalyzer.js';
 
 // @desc    Ürüne ait yorumları getir
@@ -43,8 +44,17 @@ export const createReview = async (req, res) => {
       duyguSkoru: score
     });
 
-    const populatedReview = await Review.findById(review._id).populate('kullanici', 'adSoyad');
+    // Ürünün ortalamaPuan ve yorumSayisi alanlarını güncelle
+    const allReviews = await Review.find({ urun: req.params.productId });
+    const yorumSayisi = allReviews.length;
+    const ortalamaPuan = allReviews.reduce((acc, r) => acc + r.puan, 0) / yorumSayisi;
 
+    await Product.findByIdAndUpdate(req.params.productId, {
+      ortalamaPuan: Math.round(ortalamaPuan * 10) / 10,
+      yorumSayisi
+    });
+
+    const populatedReview = await Review.findById(review._id).populate('kullanici', 'adSoyad');
     res.status(201).json(populatedReview);
   } catch (error) {
     res.status(500).json({ message: error.message });
