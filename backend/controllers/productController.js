@@ -142,3 +142,57 @@ export const updateProduct = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Gelişmiş Öneri Algoritması (Ağırlıklı Puanlama - Milestone 4.2)
+// @route   GET /api/products/recommendations/:id
+// @access  Public
+export const getRecommendations = async (req, res) => {
+  try {
+    const currentProduct = await Product.findById(req.params.id);
+    if (!currentProduct) {
+      return res.status(404).json({ message: 'Referans ürün bulunamadı' });
+    }
+
+    // Aynı kategorideki diğer ürünleri bul (mevcut ürün hariç)
+    const similarProducts = await Product.find({
+      kategori: currentProduct.kategori,
+      _id: { $ne: currentProduct._id },
+      stokSayisi: { $gt: 0 }
+    });
+
+    // Eğer aynı kategoride yeterli ürün yoksa, diğer kategorilerden yüksek puanlıları al
+    let candidateProducts = similarProducts;
+    if (candidateProducts.length < 4) {
+      const fallbackProducts = await Product.find({
+        _id: { $ne: currentProduct._id },
+        stokSayisi: { $gt: 0 }
+      }).limit(10);
+      candidateProducts = [...candidateProducts, ...fallbackProducts];
+    }
+
+    // Ağırlıklı Puanlama Algoritması (Weighted Rating):
+    // Formül: (OrtalamaPuan * 0.7) + (YorumSayısı * 0.05) + (Fiyat Benzerliği Skoru)
+    const recommendations = candidateProducts.map(prod => {
+      const ratingScore = (prod.ortalamaPuan || 0) * 0.7;
+      const reviewScore = Math.min((prod.yorumSayisi || 0) * 0.05, 1.5); // Yorum sayısının etkisi max 1.5 puan
+      
+      // Fiyat benzerliği: Fiyatlar ne kadar yakınsa o kadar yüksek puan (max 1.5 puan)
+      const priceDiffRatio = Math.abs(prod.fiyat - currentProduct.fiyat) / currentProduct.fiyat;
+      const priceSimilarityScore = Math.max(1.5 - (priceDiffRatio * 1.5), 0);
+
+      const totalScore = ratingScore + reviewScore + priceSimilarityScore;
+
+      return {
+        product: prod,
+        score: totalScore
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4)
+    .map(item => item.product);
+
+    res.json(recommendations);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

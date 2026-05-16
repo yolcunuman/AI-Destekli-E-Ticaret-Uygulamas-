@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+
+import SkeletonCard from '../components/SkeletonCard';
 
 // Yıldız bileşeni
 function StarRating({ puan, size = 'sm' }) {
@@ -242,18 +245,7 @@ export default function Products() {
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl border border-gray-100 overflow-hidden animate-pulse">
-                  <div className="h-48 bg-gray-200" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-3 bg-gray-200 rounded w-1/3" />
-                    <div className="h-4 bg-gray-200 rounded w-3/4" />
-                    <div className="h-4 bg-gray-200 rounded w-1/2" />
-                    <div className="flex justify-between mt-4">
-                      <div className="h-6 bg-gray-200 rounded w-1/4" />
-                      <div className="h-8 bg-gray-200 rounded w-1/4" />
-                    </div>
-                  </div>
-                </div>
+                <SkeletonCard key={i} />
               ))}
             </div>
           ) : products.length === 0 ? (
@@ -275,8 +267,14 @@ export default function Products() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                {products.map((product) => (
-                  <div key={product._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all flex flex-col h-full group">
+                {products.map((product, index) => (
+                  <motion.div 
+                    key={product._id} 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all flex flex-col h-full group"
+                  >
                     <Link to={`/products/${product._id}`} className="relative h-48 overflow-hidden bg-gray-100 block">
                       <img
                         src={product.resimUrl}
@@ -351,7 +349,7 @@ export default function Products() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
