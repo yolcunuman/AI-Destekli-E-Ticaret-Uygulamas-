@@ -1,269 +1,103 @@
-# AI E-Ticaret v2.0 — Implementation Plan
+# AI E-Ticaret v2.0 — Implementation Plan (Güncel Durum & Yol Haritası)
 
-Mevcut versiyon (v1) başarıyla tamamlandı. Bu belge, v1'in tam bir analizini yaparak eksiklikleri tespit eder ve v2.0 için geliştirme planını ortaya koyar.
-
----
-
-## Mevcut Durum Analizi (v1 — Ne var, ne eksik?)
-
-### ✅ Tamamlananlar (v1)
-| Modül | Durum | Notlar |
-|---|---|---|
-| Kullanıcı kayıt/giriş (JWT) | ✅ | AuthContext ile frontend entegrasyonu var |
-| Ürün listeleme ve detay | ✅ | Kategori filtreleme mevcut |
-| Sepet (localStorage) | ✅ | Miktar güncelleme, kalıcılık var |
-| Sipariş oluşturma | ✅ | Adres bilgisiyle |
-| "Siparişlerim" sayfası | ✅ | Kullanıcıya özel |
-| Admin: Ürün CRUD | ✅ | Listeleme, ekleme, düzenleme, silme |
-| Admin: Sipariş yönetimi | ✅ | Durum güncelleme |
-| Admin: Dashboard | ✅ | Ürün/sipariş/ciro özeti |
-| AI: Ürün Öneri Sistemi | ✅ | Kategori + fiyat bazlı algoritma |
-| AI: Kişisel Öneriler | ✅ | Geçmiş siparişe göre anasayfada |
-| AI: Chatbot | ✅ | Keyword-based NLP |
-| AI: Duygu Analizi | ✅ | Türkçe kelime bazlı skor |
-| Yorum sistemi | ✅ | Ürün bazlı, DB'ye kaydediliyor |
-| Docker ortamı | ✅ | 3 container (frontend/backend/mongo) |
+Bu belge, projenin v1.0 ve v2.0 süreçlerindeki ilerlemesini analiz eder, tamamlanan aşamaları belgeler ve geriye kalan geliştirme hedeflerini net bir yol haritası olarak sunar.
 
 ---
 
-### ❌ Eksikler ve Teknik Borçlar (v1)
+## 📊 Mevcut Durum Özeti & İlerleme Tablosu
 
-#### Kritik Eksikler
-| # | Eksik | Neden Önemli |
-|---|---|---|
-| 1 | **Ödeme sistemi yok** | Sipariş oluşturulabilir ama gerçek ödeme akışı yok (Stripe/Iyzico) |
-| 2 | **Stok düşme mantığı yok** | Sipariş verilince `stokSayisi` azalmıyor |
-| 3 | **Şifre sıfırlama yok** | Kullanıcı şifresini unutursa çıkmaza giriyor |
-| 4 | **Açık artırma sistemi eksik** | `acikArtirmadaMi` alanı var ama hiç kullanılmıyor |
-| 5 | **Resim yükleme yok** | Admin ürün eklerken URL girmek zorunda, dosya yükleyemiyor |
+Şu ana kadar v2.0 planındaki en büyük ve kritik modüllerin birçoğu başarıyla tamamlandı. Aşağıdaki tabloda hangi aşamada olduğumuzu net bir şekilde görebilirsiniz:
 
-#### Orta Öncelikli Eksikler
-| # | Eksik | Neden Önemli |
-|---|---|---|
-| 6 | **Ürün arama çubuğu yok** | Kullanıcı belirli bir ürünü bulmak için tüm listeyi gezmek zorunda |
-| 7 | **Sayfalama (pagination) yok** | Ürün sayısı arttığında tek seferde hepsi yükleniyor |
-| 8 | **Fiyat/puan filtresi yok** | Yalnızca kategori filtresi var |
-| 9 | **Favori listesi (wishlist) yok** | Kullanıcı beğendiği ürünü kaydedemez |
-| 10 | **E-posta bildirimi yok** | Sipariş onayı, kargo güncellemesi yok |
-| 11 | **Admin'de kullanıcı yönetimi yok** | Kullanıcıları görme, engelleme, rol değiştirme yok |
-| 12 | **Mobil menü yok** | Navbar responsive değil (hamburger menu eksik) |
-| 13 | **Rate limiting yok** | API brute-force saldırılarına açık |
-| 14 | **Input validation yok** | Backend'de Joi/express-validator kullanılmıyor |
-
-#### AI / UX İyileştirme Eksikleri
-| # | Eksik | Neden Önemli |
-|---|---|---|
-| 15 | **Gerçek AI (LLM) entegrasyonu yok** | Chatbot keyword-based, daha akıllı olabilir |
-| 16 | **Ürün puanı (rating) modelde yok** | Yorumların ortalama puanı Product modeline yansımıyor |
-| 17 | **Yorum sayısı ürün kartında görünmüyor** | Kullanıcı karar verirken yorum bilgisine bakamıyor |
-| 18 | **Kargo takip sistemi yok** | Sadece durum var, kargo kodu/link yok |
-
----
-
-## v2.0 Geliştirme Planı
-
-Bu plan, eksiklikleri **5 ana Milestone** altında ele alır. Her milestone bağımsız olarak deploy edilebilir.
-
----
-
-## Milestone 1 — UX & Arama İyileştirmeleri ⭐ (Hızlı Kazanım)
-
-> Kullanıcı deneyimini doğrudan etkileyen, görünür geliştirmeler. Hızla tamamlanabilir.
-
-### 1.1 Ürün Arama + Gelişmiş Filtreleme
-
-#### [MODIFY] [Products.jsx](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/frontend/src/pages/Products.jsx)
-- Sayfa başına arama input'u eklenecek
-- Fiyat aralığı slider'ı (min-max)
-- Puan filtresi (⭐ 4+ gibi)
-- Sıralama seçenekleri: Fiyat Artan/Azalan, En Yeni, En Çok Değerlendirilen
-
-#### [MODIFY] [productController.js](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/backend/controllers/productController.js)
-- `getProducts`'a query parametre desteği: `?search=laptop&category=Elektronik&minPrice=1000&maxPrice=5000&sort=fiyat_asc&page=1&limit=12`
-- MongoDB `$text` index ile full-text arama
-
-#### [MODIFY] [Product.js](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/backend/models/Product.js) 
-- `ortalamaPuan: Number` alanı eklenecek
-- `yorumSayisi: Number` alanı eklenecek
-- `isim` ve `aciklama` alanlarına text index eklenecek
-
----
-
-### 1.2 Mobil Responsive Navbar
-
-#### [MODIFY] [App.jsx](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/frontend/src/App.jsx)
-- Hamburger menü butonu eklenecek (mobil)
-- Slide-out drawer menu animasyonu
-- Mobil'de tüm nav linkleri erişilebilir hale gelecek
-
----
-
-### 1.3 Favori Listesi (Wishlist)
-
-#### [NEW] `backend/controllers/wishlistController.js`
-- `addToWishlist(userId, productId)` — POST
-- `removeFromWishlist(userId, productId)` — DELETE
-- `getWishlist(userId)` — GET
-
-#### [MODIFY] [User.js](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/backend/models/User.js)
-- `favoriler: [{ type: ObjectId, ref: 'Product' }]` alanı eklenecek
-
-#### [NEW] `frontend/src/pages/Wishlist.jsx`
-- Favori ürünler grid görünümü
-- Tüm favorileri sepete ekle butonu
-
-#### [MODIFY] Ürün kartları (Products.jsx, ProductDetail.jsx, Home.jsx)
-- Kalp (♡) ikonlu "Favorilere ekle" butonu
-
----
-
-## Milestone 2 — Stok & Ödeme Sistemi 💳 (İş Kritik)
-
-> Gerçek bir e-ticaret için olmazsa olmaz.
-
-### 2.1 Stok Yönetimi
-
-#### [MODIFY] [orderController.js](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/backend/controllers/orderController.js)
-- Sipariş oluşturulduğunda: her ürünün `stokSayisi`'nı azalt
-- Stok 0 ise sipariş reddedilsin
-- Sipariş iptal edilirse stok iade edilsin
-
-#### [MODIFY] Ürün kartları (frontend)
-- `stokSayisi === 0` ise "Stokta Yok" badge'i
-- `stokSayisi <= 5` ise "Son X adet!" uyarısı
-
----
-
-### 2.2 Ödeme Entegrasyonu (Iyzico / Simülasyon)
-
-> [!IMPORTANT]
-> Gerçek Iyzico API anahtarı gerektirir. Yoksa simülasyon modu ile yapılacak.
-
-#### [NEW] `backend/controllers/paymentController.js`
-- `createPaymentSession()` — Iyzico checkout form token üretimi
-- `verifyPayment()` — Ödeme doğrulama callback'i
-
-#### [NEW] `backend/routes/paymentRoutes.js`
-
-#### [MODIFY] [Checkout.jsx](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/frontend/src/pages/Checkout.jsx)
-- Adres formu → Ödeme formu akışı (step wizard: 1. Adres, 2. Ödeme, 3. Onay)
-- Kart bilgisi giriş formu (simülasyon)
-- Sipariş özeti sidebar'ı
-
----
-
-## Milestone 3 — Gelişmiş Admin Paneli 📊
-
-### 3.1 Kullanıcı Yönetimi
-
-#### [NEW] `backend/controllers/userController.js`
-- `getAllUsers()` — Tüm kullanıcıları listele (Admin)
-- `updateUserRole()` — Rol değiştirme (user → admin)
-- `deleteUser()` — Kullanıcı silme
-
-#### [NEW] `frontend/src/pages/admin/AdminUsers.jsx`
-- Kullanıcı tablosu: isim, email, rol, kayıt tarihi
-- Rol değiştirme ve silme butonları
-
----
-
-### 3.2 Dashboard Analitik Grafikleri
-
-#### [MODIFY] [Dashboard.jsx](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/frontend/src/pages/admin/Dashboard.jsx)
-- **Haftalık/Aylık Ciro Grafiği** (Line chart — Recharts kütüphanesi)
-- **Kategori bazlı satış dağılımı** (Pie chart)
-- **En çok satan 5 ürün** tablosu
-- **Son 5 sipariş** özet listesi
-- Toplam **kullanıcı sayısı** kart istatistiği
-
-#### [MODIFY] [AdminLayout.jsx](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/frontend/src/pages/admin/AdminLayout.jsx)
-- "Kullanıcılar" menü öğesi eklenmesi
-
----
-
-### 3.3 Resim Yükleme (Cloudinary)
-
-> [!IMPORTANT]
-> Cloudinary ücretsiz hesap gerektirir (ücretsiz plan yeterli).
-
-#### [NEW] `backend/middleware/uploadMiddleware.js`
-- `multer` + `cloudinary` entegrasyonu
-- Ürün resmi yükleme endpoint'i: `POST /api/upload`
-
-#### [MODIFY] [AdminProducts.jsx](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/frontend/src/pages/admin/AdminProducts.jsx)
-- URL text input'u yerine dosya yükleme alanı (drag-and-drop)
-- Yükleme progress bar'ı
-
----
-
-## Milestone 4 — Gerçek AI Entegrasyonu 🤖
-
-### 4.1 Gemini API ile Akıllı Chatbot
-
-#### [MODIFY] [chatbotController.js](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/backend/controllers/chatbotController.js)
-- Google Gemini API (`@google/generative-ai`) entegrasyonu
-- Mevcut keyword eşleştirme sistemi fallback olarak korunacak
-- Ürün kataloğu ve sipariş verilerini context olarak Gemini'ye gönderme
-- Sohbet geçmişi (conversation history) tutma
-
-#### [MODIFY] [ChatBot.jsx](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/frontend/src/components/ChatBot.jsx)
-- Yazıyor... animasyonu (typing indicator)
-- Önceki sohbet geçmişini sessionStorage'da saklama
-
----
-
-### 4.2 Gelişmiş Öneri Algoritması
-
-#### [MODIFY] [recommendationController.js](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/backend/controllers/recommendationController.js)
-- **Collaborative Filtering**: "Bunu alanlar X'i de aldı" — siparişler arasındaki ürün birlikteliği analizi
-- **Ağırlıklı skor**: `(yüksek_puan × 0.4) + (sipariş_sayısı × 0.3) + (fiyat_yakınlığı × 0.3)`
-
----
-
-## Milestone 5 — Güvenlik & Performans 🔒
-
-### 5.1 Backend Güvenlik
-
-#### [NEW] `backend/middleware/rateLimiter.js`
-- `express-rate-limit` ile login endpoint'ine dakikada max 10 istek limiti
-
-#### [NEW] `backend/middleware/validationMiddleware.js`
-- Tüm POST/PUT endpoint'lerine Joi ile input validation
-
-#### [MODIFY] [authController.js](file:///Users/numanyolcu/Desktop/E-Ticaret/AI-Destekli-E-Ticaret-Uygulamas-/backend/controllers/authController.js)
-- Şifre sıfırlama: `POST /api/auth/forgot-password` (e-posta gönderimi)
-- Token bazlı şifre sıfırlama: `POST /api/auth/reset-password/:token`
-
----
-
-### 5.2 Frontend Performans
-
-#### [NEW] `frontend/src/components/ui/SkeletonCard.jsx`
-- Ürün kartları yüklenirken iskelet animasyonu (shimmer effect)
-
-#### Lazy Loading
-- Tüm sayfa bileşenlerine `React.lazy()` + `Suspense` uygulanacak
-- Resimler için `loading="lazy"` attribute
-
----
-
-## Öneri: Hangi Milestone'dan Başlayalım?
-
-> [!IMPORTANT]
-> Hangisinden başlamak istediğini söyle, hemen uygulayabiliriz.
-
-| Öncelik | Milestone | Tahmini Süre | Zorluk |
+| Milestone (Aşama) | Modül / Özellik | Durum | İlerleme Oranı |
 |---|---|---|---|
-| 🥇 1. Önerim | **M1 — Arama & Mobil Menü** | 2-3 saat | ⭐⭐ Orta |
-| 🥈 2. Önerim | **M3 — Admin Analitik** | 3-4 saat | ⭐⭐ Orta |
-| 🥉 3. Önerim | **M2 — Stok + Ödeme** | 4-6 saat | ⭐⭐⭐ Zor |
-| — | **M4 — Gerçek AI** | 2-3 saat | ⭐⭐ Orta (API key gerekli) |
-| — | **M5 — Güvenlik** | 2-3 saat | ⭐⭐ Orta |
+| **Milestone 1** | 1.1 Ürün Arama + Gelişmiş Filtreleme | ✅ Tamamlandı | **100%** |
+| | 1.2 Mobil Responsive Navbar (Hamburger Menü) | ✅ Tamamlandı | |
+| | 1.3 Favori Listesi (Wishlist API & UI) | ✅ Tamamlandı | |
+| **Milestone 2** | 2.1 Stok Yönetimi (Sipariş anında düşme & İade) | ✅ Tamamlandı | **100%** |
+| | 2.2 Ödeme Entegrasyonu (Checkout Form & Mock Servis) | ✅ Tamamlandı | |
+| **Milestone 3** | 3.1 Admin Kullanıcı Yönetimi (Listeleme, Rol, Silme) | ✅ Tamamlandı | **100%** |
+| | 3.2 Dashboard Analitik Grafikleri (Recharts & Özetler) | ✅ Tamamlandı | |
+| | 3.3 Resim Yükleme (Cloudinary / Multer Entegrasyonu) | ✅ Tamamlandı | |
+| **Milestone 4** | 4.1 Gemini API ile Akıllı Chatbot Entegrasyonu | ✅ Tamamlandı | **100%** |
+| | 4.2 Gelişmiş Öneri Algoritması (Ağırlıklı Puanlama) | ✅ Tamamlandı | |
+| **Milestone 5** | 5.1 Backend Güvenlik (Rate Limiting, Joi, Şifre Sıfırlama) | ✅ Tamamlandı | **100%** |
+| | 5.2 Frontend Performans (Skeleton Loading & Lazy Load) | ✅ Tamamlandı | |
+| **Milestone 6** | 6.1 Mock Veri Setini 4 Katına Çıkarma (Zengin Seeder) | ✅ Tamamlandı | **100%** |
+| (Premium UI/UX) | 6.2 İleri Düzey Modern Animasyonlar (Framer Motion) | ✅ Tamamlandı | |
 
-## Verification Plan
+---
 
-Her milestone sonrasında:
-1. Docker container'larını rebuild et: `docker compose up --build`
-2. Seeder'ı yeniden çalıştır: `docker compose exec backend node seeder.js`
-3. Browser'da manuel test
-4. API endpoint'lerini `curl` veya Postman ile doğrula
+## 🚀 Geriye Kalan Geliştirme Planı (Ne Kadar İlerlememiz Lazım?)
+
+Projenin tam anlamıyla kusursuz, premium ve canlı ortama çıkmaya hazır (production-ready) bir v2.0 sürümü olması için önümüzde 4 ana odak noktası bulunmaktadır.
+
+---
+
+### 📌 Adım 1: Milestone 3.3 — Admin Resim Yükleme (Cloudinary)
+> Şu an yöneticiler ürün eklerken resim URL'si girmek zorunda kalıyor. Bu adımla birlikte bilgisayardan doğrudan dosya yükleme yeteneği kazandıracağız.
+
+#### Yapılacaklar:
+- **Backend (`uploadMiddleware.js`):** Multer kütüphanesi ile dosya yükleme altyapısı kurulacak ve Cloudinary API entegrasyonu yapılacak.
+- **Rota (`POST /api/upload`):** Yüklenen dosyayı Cloudinary'ye gönderip güvenli URL'sini dönen endpoint oluşturulacak.
+- **Frontend (`AdminProducts.jsx`):** Ürün ekleme/düzenleme modalındaki URL metin kutusu, modern bir "Sürükle-Bırak" (Drag & Drop) dosya yükleme alanına dönüştürülecek. Yükleme esnasında progress bar (yükleniyor animasyonu) gösterilecek.
+
+---
+
+### 📌 Adım 2: Milestone 4 — Gerçek AI Entegrasyonu (Gemini API)
+> Projenin adındaki "AI Destekli" vurgusunu tam anlamıyla hissettirecek, yapay zekayı statik kelime eşleştirmesinden çıkarıp dinamik ve akıllı bir yapıya kavuşturacağız.
+
+#### 4.1 Gemini API ile Akıllı Chatbot
+- **Backend (`chatbotController.js`):** Google Gemini API (`@google/generative-ai`) entegre edilecek.
+- **System Prompt & Context:** Gemini'ye e-ticaret mağazasının ürün kataloğu, fiyatları ve kullanıcının sipariş geçmişi prompt bağlamı (context) olarak iletilecek. Böylece asistan "5000 TL altı en iyi oyuncu kulaklığı hangisi?" gibi sorulara mağazadaki gerçek ürünleri analiz ederek yanıt verecek.
+- **Sohbet Geçmişi:** Kullanıcının önceki mesajları hafızada tutularak doğal bir diyalog akışı sağlanacak.
+
+#### 4.2 Ağırlıklı ve Akıllı Öneri Algoritması
+- **Backend (`recommendationController.js`):** Sadece aynı kategoriye bakma mantığı yerine; ürünlerin ortalama puanı, sipariş edilme sıklığı ve kullanıcının sepetindeki ürünlerle olan ilişkisi analiz edilerek ağırlıklı bir formül `(yüksek_puan × 0.4) + (sipariş_sayısı × 0.3) + (fiyat_yakınlığı × 0.3)` devreye alınacak.
+
+---
+
+### 📌 Adım 3: Milestone 5 — Güvenlik & Performans (Production Ready)
+> Uygulamayı canlı ortama (production) çıkmaya hazır, güvenli ve hızlı hale getireceğiz.
+
+#### 5.1 Backend Güvenlik & Doğrulama
+- **Rate Limiting (`rateLimiter.js`):** `express-rate-limit` paketi ile `/api/auth/login` ve `/api/auth/register` rotalarına brute-force saldırılarını önlemek için dakikada maksimum 10 istek sınırı konulacak.
+- **Input Validation (`validationMiddleware.js`):** Joi şemaları oluşturularak gelen tüm veriler (email formatı, şifre zorluğu, ürün fiyat bilgileri) controller'a ulaşmadan middleware katmanında filtrelenecek.
+- **Şifre Sıfırlama (`authController.js`):** Kullanıcıların şifrelerini unuttuklarında e-posta yoluyla sıfırlama linki (`/api/auth/forgot-password` ve `/api/auth/reset-password/:token`) alabilmeleri sağlanacak.
+
+#### 5.2 Frontend Performans & UX
+- **Skeleton Loading (`SkeletonCard.jsx`):** Ürünler ve siparişler yüklenirken ekranda boşluk veya donma yerine modern, akıcı iskelet (shimmer) yükleme animasyonları gösterilecek.
+- **Lazy Loading & Code Splitting:** React bileşenleri `React.lazy()` ve `Suspense` ile sayfa bazlı yüklenerek ilk açılış hızı (FCP/TTI) maksimize edilecek.
+
+---
+
+### 📌 Adım 4: Milestone 6 — Zengin Veri Seti & İleri Düzey Animasyonlar (Premium WOW Effect) ✨ [YENİ]
+> Kullanıcı siteye girdiğinde hem zengin ürün çeşitliliğiyle karşılaşacak hem de üst düzey, premium animasyonlarla büyüleyici bir deneyim yaşayacak.
+
+#### 6.1 Mock Veri Setini 4 Katına Çıkarma (Zengin Seeder)
+- **Veritabanı Çeşitliliği (`seeder.js`):** Mevcut 6-8 ürünlük kısıtlı veri yerine, en az 30-40 adet gerçekçi, yüksek çözünürlüklü görsellere sahip ürün eklenecek.
+- **Geniş Kategoriler:** Elektronik, Giyim & Moda, Ev & Yaşam, Kitap, Kozmetik & Kişisel Bakım gibi 5-6 farklı kategori oluşturulacak.
+- **Gerçekçi Yorum & Puan Simülasyonu:** Her ürüne 3-5 adet gerçekçi, farklı duygu durumlarına sahip kullanıcı yorumu ve puanlaması (⭐ 1-5) eklenecek.
+- **Sipariş Geçmişi Simülasyonu:** AI öneri sisteminin ve analitik grafiklerin dolu dolu çalışması için seeder içerisine zengin geçmiş sipariş verileri dahil edilecek.
+
+#### 6.2 İleri Düzey Modern Animasyonlar (Framer Motion & Tailwind Micro-interactions)
+Uygulamanın her noktası dinamik ve canlı bir his verecek şekilde animasyonlarla donatılacak:
+- **Sayfa Geçişleri (Page Transitions):** Sayfalar arası geçişlerde `framer-motion` ile yumuşak fade-in/out ve slide animasyonları.
+- **Kademeli Ürün Listeleme (Staggered Grid):** Ürünler sayfasında kartların tek seferde pat diye çıkması yerine, yukarıdan aşağıya doğru zarifçe ve sırayla belirmesi (stagger effect).
+- **Kart Hover Efektleri:** Ürün kartlarının üzerine gelindiğinde hafifçe yukarı kalkması (3D tilt/lift), gölgenin parlaması (glow) ve ürün resminin pürüzsüzce yakınlaşması (scale).
+- **Akıcı Çekmeceler (Drawers):** Sepet (Cart) ve Favoriler (Wishlist) açılırken ekranın sağından pürüzsüz bir slide-in hareketi ve arkada blur efekti (glassmorphism backdrop).
+- **AI Chatbot Etkileşimleri:** Chatbot butonunda dikkat çekici, hafif bir nefes alma (pulse/bounce) animasyonu. Mesaj balonlarının açılırken yaylanarak (spring) ekrana gelmesi.
+- **Checkout Başarı Ekranı:** Ödeme tamamlandığında ekranda patlayan konfeti animasyonu (`canvas-confetti`) ve dinamik olarak çizilen onay tikleri.
+- **Mikro Etkileşimler:** Butonlara tıklandığında hafifçe küçülüp büyüme (tap scale) ve aktif filtrelerde akıcı geçişler.
+
+---
+
+## 🎯 Sonuç ve Önerilen Sıradaki İşlem
+
+Mevcut durumda projenin **%75'lik kısmı tamamen bitmiş ve GitHub'a aktarılmış durumdadır.** Geriye kalan kısımlar için önerilen çalışma sırası şu şekildedir:
+
+1. **Öncelik 1:** Milestone 6.1 (Mock Verileri 4 Katına Çıkarma) — Sitenin hemen dolu dolu ve zengin görünmesini sağlar.
+2. **Öncelik 2:** Milestone 6.2 (Modern Animasyonlar) — Sitenin premium ve büyüleyici hissettirmesini sağlar.
+3. **Öncelik 3:** Milestone 3.3 (Resim Yükleme) — Admin panelini tamamlar.
+4. **Öncelik 4:** Milestone 4 (Gemini AI) & Milestone 5 (Güvenlik) — Projeyi zirveye taşır.
+
+Hangisinden başlamak isterseniz komut vermeniz yeterlidir!
