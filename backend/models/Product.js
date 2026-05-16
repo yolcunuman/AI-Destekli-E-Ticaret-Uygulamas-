@@ -32,10 +32,21 @@ const productSchema = new mongoose.Schema({
   acikArtirmadaMi: {
     type: Boolean,
     default: false
+  },
+  ortalamaPuan: {
+    type: Number,
+    default: 0
+  },
+  yorumSayisi: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true
 });
+
+// Full-text arama için index
+productSchema.index({ isim: 'text', aciklama: 'text', kategori: 'text' });
 
 const Product = mongoose.model('Product', productSchema);
 export default Product;

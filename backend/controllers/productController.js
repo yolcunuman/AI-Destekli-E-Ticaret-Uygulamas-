@@ -1,12 +1,60 @@
 import Product from '../models/Product.js';
 
-// @desc    Tüm ürünleri getir
-// @route   GET /api/products
+// @desc    Tüm ürünleri getir (arama, filtre, sayfalama destekli)
+// @route   GET /api/products?search=&category=&minPrice=&maxPrice=&sort=&page=1&limit=12
 // @access  Public
 export const getProducts = async (req, res) => {
   try {
-    const products = await Product.find({});
-    res.json(products);
+    const { search, category, minPrice, maxPrice, sort, page = 1, limit = 50 } = req.query;
+
+    // Filtre nesnesi oluştur
+    const filter = {};
+
+    // Full-text arama
+    if (search && search.trim()) {
+      filter.$text = { $search: search.trim() };
+    }
+
+    // Kategori filtresi
+    if (category && category !== 'Tümü') {
+      filter.kategori = category;
+    }
+
+    // Fiyat aralığı
+    if (minPrice || maxPrice) {
+      filter.fiyat = {};
+      if (minPrice) filter.fiyat.$gte = Number(minPrice);
+      if (maxPrice) filter.fiyat.$lte = Number(maxPrice);
+    }
+
+    // Puan filtresi
+    if (req.query.minRating) {
+      filter.ortalamaPuan = { $gte: Number(req.query.minRating) };
+    }
+
+    // Sıralama
+    let sortOption = { createdAt: -1 }; // Varsayılan: en yeni
+    if (sort === 'fiyat_asc') sortOption = { fiyat: 1 };
+    else if (sort === 'fiyat_desc') sortOption = { fiyat: -1 };
+    else if (sort === 'puan_desc') sortOption = { ortalamaPuan: -1 };
+    else if (sort === 'yorum_desc') sortOption = { yorumSayisi: -1 };
+
+    // Sayfalama
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(100, Number(limit));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [products, totalCount] = await Promise.all([
+      Product.find(filter).sort(sortOption).skip(skip).limit(limitNum),
+      Product.countDocuments(filter)
+    ]);
+
+    res.json({
+      products,
+      page: pageNum,
+      totalPages: Math.ceil(totalCount / limitNum),
+      totalCount
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

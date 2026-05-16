@@ -10,6 +10,9 @@ import orderRoutes from './routes/orderRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
+import wishlistRoutes from './routes/wishlistRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 // Çevresel değişkenleri yükle
 dotenv.config();
@@ -31,6 +34,9 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/users', userRoutes);
 
 // Kök dizin (Test)
 app.get('/', (req, res) => {

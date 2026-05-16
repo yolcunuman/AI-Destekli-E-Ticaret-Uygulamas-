@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import PersonalRecommendations from '../components/PersonalRecommendations';
 
 export default function Home() {
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/products');
+        const response = await fetch('http://localhost:5001/api/products?limit=4&sort=');
         const data = await response.json();
-        setFeaturedProducts(data.slice(0, 4));
+        setFeaturedProducts(data.products ? data.products.slice(0, 4) : []);
         setLoading(false);
       } catch (error) {
         console.error("Hata:", error);
@@ -80,15 +82,30 @@ export default function Home() {
                   <span className="text-xl font-bold text-gray-900">
                     {product.fiyat.toLocaleString('tr-TR')} ₺
                   </span>
-                  <button 
-                    onClick={() => addToCart(product)}
-                    className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors"
-                    title="Sepete Ekle"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
+                      className={`p-2 rounded-lg transition-colors ${
+                        isInWishlist(product._id)
+                          ? 'bg-red-50 text-red-500 hover:bg-red-100'
+                          : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                      }`}
+                      title="Favorilere Ekle/Çıkar"
+                    >
+                      <svg className="w-5 h-5" fill={isInWishlist(product._id) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                    </button>
+                    <button 
+                      onClick={() => addToCart(product)}
+                      className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors"
+                      title="Sepete Ekle"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

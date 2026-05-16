@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { WishlistProvider } from './context/WishlistContext';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
@@ -14,71 +16,123 @@ import AdminLayout from './pages/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
+import AdminUsers from './pages/admin/AdminUsers';
 import ChatBot from './components/ChatBot';
+import Wishlist from './pages/Wishlist';
 
 function Navbar() {
   const { getCartCount } = useCart();
   const { user, logout } = useAuth();
   const cartCount = getCartCount();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
+    <>
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            {/* Logo */}
+            <div className="flex items-center">
               <Link to="/" className="text-2xl font-black text-indigo-600 tracking-tight">AI Store</Link>
-            </div>
-            <div className="hidden sm:ml-8 sm:flex sm:space-x-8">
-              <Link to="/" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
-                Anasayfa
-              </Link>
-              <Link to="/products" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
-                Ürünler
-              </Link>
-            </div>
-          </div>
-          <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
-            <Link to="/cart" className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-colors relative">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              {cartCount > 0 && (
-                <span className="absolute top-0 right-0 -mt-1 -mr-1 flex justify-center items-center h-4 w-4 rounded-full bg-red-500 text-white text-xs font-bold">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-            {user ? (
-              <div className="flex items-center gap-4">
-                <Link to="/my-orders" className="text-sm font-bold text-gray-700 hover:text-indigo-600 transition-colors">
-                  Siparişlerim
+              <div className="hidden sm:ml-8 sm:flex sm:space-x-8">
+                <Link to="/" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
+                  Anasayfa
                 </Link>
-                {user.rol === 'admin' && (
-                  <Link to="/admin" className="text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors">
-                    Admin Paneli
+                <Link to="/products" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
+                  Ürünler
+                </Link>
+              </div>
+            </div>
+
+            {/* Sağ alan */}
+            <div className="flex items-center gap-3">
+              {/* Sepet */}
+              <Link to="/cart" className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-colors relative">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {cartCount > 0 && (
+                  <span className="absolute top-0 right-0 -mt-1 -mr-1 flex justify-center items-center h-4 w-4 rounded-full bg-red-500 text-white text-xs font-bold">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* Desktop kullanıcı menüsü */}
+              <div className="hidden sm:flex items-center gap-3">
+                {user ? (
+                  <>
+                    <Link to="/my-orders" className="text-sm font-bold text-gray-700 hover:text-indigo-600 transition-colors">Siparişlerim</Link>
+                    <Link to="/wishlist" className="text-gray-500 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors" title="Favorilerim">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                    </Link>
+                    {user.rol === 'admin' && (
+                      <Link to="/admin" className="text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors">Admin Paneli</Link>
+                    )}
+                    <span className="text-sm font-medium text-gray-400">|</span>
+                    <span className="text-sm font-medium text-gray-700">Hoş geldin, {user.adSoyad.split(' ')[0]}</span>
+                    <button onClick={logout} className="text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                      Çıkış Yap
+                    </button>
+                  </>
+                ) : (
+                  <Link to="/login" className="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    Giriş Yap
                   </Link>
                 )}
-                <span className="text-sm font-medium text-gray-400 hidden sm:block">|</span>
-                <span className="text-sm font-medium text-gray-700 hidden sm:block">
-                  Hoş geldin, {user.adSoyad.split(' ')[0]}
-                </span>
-                <button
-                  onClick={logout}
-                  className="text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                >
-                  Çıkış Yap
-                </button>
               </div>
-            ) : (
-              <Link to="/login" className="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                Giriş Yap
-              </Link>
-            )}
+
+              {/* Hamburger (mobil) */}
+              <button
+                id="hamburger-btn"
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="sm:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+                aria-label="Menüyü aç/kapat"
+              >
+                {mobileOpen ? (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+
+        {/* Mobil Drawer Menü */}
+        {mobileOpen && (
+          <div className="sm:hidden border-t border-gray-100 bg-white shadow-lg">
+            <div className="px-4 pt-3 pb-4 space-y-1">
+              <Link to="/" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 font-medium transition-colors">Anasayfa</Link>
+              <Link to="/products" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 font-medium transition-colors">Ürünler</Link>
+              {user ? (
+                <>
+                  <Link to="/my-orders" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 font-medium transition-colors">Siparişlerim</Link>
+                  {user.rol === 'admin' && (
+                    <Link to="/admin" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-indigo-600 bg-indigo-50 font-medium transition-colors">Admin Paneli</Link>
+                  )}
+                  <div className="px-3 py-2 text-sm text-gray-500">Hoş geldin, {user.adSoyad.split(' ')[0]}</div>
+                  <button
+                    onClick={() => { logout(); setMobileOpen(false); }}
+                    className="w-full text-left px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 font-medium transition-colors"
+                  >
+                    Çıkış Yap
+                  </button>
+                </>
+              ) : (
+                <Link to="/login" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-indigo-600 bg-indigo-50 font-medium transition-colors">Giriş Yap</Link>
+              )}
+            </div>
+          </div>
+        )}
+      </nav>
+    </>
   );
 }
 
@@ -103,8 +157,9 @@ function Layout({ children }) {
 function App() {
   return (
     <AuthProvider>
-      <CartProvider>
-        <BrowserRouter>
+      <WishlistProvider>
+        <CartProvider>
+          <BrowserRouter>
           <Routes>
             {/* Admin Routes - kendi layout'unu kullanır */}
             <Route element={<AdminRoute />}>
@@ -112,6 +167,7 @@ function App() {
                 <Route index element={<Dashboard />} />
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="orders" element={<AdminOrders />} />
+                <Route path="users" element={<AdminUsers />} />
               </Route>
             </Route>
 
@@ -125,6 +181,7 @@ function App() {
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/my-orders" element={<MyOrders />} />
+                  <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                 </Routes>
@@ -133,7 +190,8 @@ function App() {
           </Routes>
           <ChatBot />
         </BrowserRouter>
-      </CartProvider>
+        </CartProvider>
+      </WishlistProvider>
     </AuthProvider>
   );
 }
