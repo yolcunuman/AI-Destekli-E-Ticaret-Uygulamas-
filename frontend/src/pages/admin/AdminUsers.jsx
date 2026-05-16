@@ -108,7 +108,7 @@ export default function AdminUsers() {
               Email: u.email,
               Rol: u.rol,
               Kayit_Tarihi: new Date(u.createdAt).toLocaleDateString('tr-TR')
-            })), 'Artisana_Kullanicilar_Raporu'
+            })), 'Nexia_AI_Kullanicilar_Raporu'
           )}
           className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 active:scale-95 transition-all"
         >

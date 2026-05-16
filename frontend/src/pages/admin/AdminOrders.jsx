@@ -95,7 +95,7 @@ export default function AdminOrders() {
               Durum: o.siparisDurumu,
               Tarih: new Date(o.createdAt).toLocaleDateString('tr-TR'),
               Adres: o.kargoAdresi
-            })), 'Artisana_Tum_Siparisler_Raporu'
+            })), 'Nexia_AI_Tum_Siparisler_Raporu'
           )}
           className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 active:scale-95 transition-all"
         >
