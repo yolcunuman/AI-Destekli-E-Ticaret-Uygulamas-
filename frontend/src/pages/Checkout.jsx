@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -146,7 +147,13 @@ export default function Checkout() {
           )}
 
           {step === 1 && (
-            <form onSubmit={handleNextStep} className="animate-fade-in">
+            <motion.form 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+              onSubmit={handleNextStep}
+            >
               <h2 className="text-xl font-bold mb-6">Teslimat Bilgileri</h2>
               <div className="mb-6">
                 <label className="block text-gray-700 font-medium mb-2">Kargo Adresi</label>
@@ -165,11 +172,17 @@ export default function Checkout() {
               >
                 Ödeme Adımına Geç
               </button>
-            </form>
+            </motion.form>
           )}
 
           {step === 2 && (
-            <form onSubmit={handleNextStep} className="animate-fade-in">
+            <motion.form 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+              onSubmit={handleNextStep}
+            >
               <h2 className="text-xl font-bold mb-6">Kredi/Banka Kartı Bilgileri</h2>
               <div className="bg-blue-50 text-blue-800 p-4 rounded-lg mb-6 text-sm border border-blue-100">
                 <p className="font-bold mb-1">Simülasyon Modu</p>
@@ -214,15 +227,28 @@ export default function Checkout() {
                   Devam Et
                 </button>
               </div>
-            </form>
+            </motion.form>
           )}
 
           {step === 3 && (
-            <div className="animate-fade-in text-center">
-              <div className="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              transition={{ duration: 0.4 }}
+              className="text-center"
+            >
+              <div className="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md shadow-green-100">
+                <motion.svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <motion.path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={3} 
+                    d="M5 13l4 4L19 7" 
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  />
+                </motion.svg>
               </div>
               <h2 className="text-2xl font-bold mb-2">Siparişiniz Hazır!</h2>
               <p className="text-gray-500 mb-8">Kart bilgileriniz doğrulandı. Siparişinizi onaylamak için aşağıdaki butona tıklayın.</p>
@@ -241,7 +267,7 @@ export default function Checkout() {
                   )}
                 </button>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
 
