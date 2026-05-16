@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { toast } from 'react-hot-toast';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({ products: 0, orders: 0, revenue: 0, users: 0 });
@@ -47,11 +48,38 @@ export default function Dashboard() {
     fetchStats();
   }, [user]);
 
+  const exportToCSV = (data, filename) => {
+    const bom = '\uFEFF';
+    if (!data || !data.length) {
+      toast.error('Dışa aktarılacak veri bulunamadı!');
+      return;
+    }
+    
+    const headers = Object.keys(data[0]).join(';');
+    const rows = data.map(row => {
+      return Object.values(row).map(val => {
+        if (val === null || val === undefined) return '';
+        const str = String(val).replace(/"/g, '""');
+        return `"${str}"`;
+      }).join(';');
+    }).join('\n');
+    
+    const csvContent = bom + headers + '\n' + rows;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(`📊 ${filename}.csv başarıyla dışa aktarıldı!`);
+  };
+
   // Ciro Grafiği Verisi (Son 7 Gün)
   const revenueData = useMemo(() => {
     if (!allOrders.length) return [];
     
-    // Son 7 günün tarihlerini oluştur
     const days = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -80,10 +108,8 @@ export default function Dashboard() {
     
     const categoryCount = {};
     
-    // Her siparişteki ürünleri gez
     allOrders.forEach(order => {
       order.siparisKalemleri.forEach(item => {
-        // İlgili ürünü bul (kategorisini öğrenmek için)
         const product = allProducts.find(p => p._id === item.urun);
         if (product) {
           categoryCount[product.kategori] = (categoryCount[product.kategori] || 0) + item.miktar;
@@ -94,7 +120,7 @@ export default function Dashboard() {
     return Object.keys(categoryCount).map(key => ({
       name: key,
       value: categoryCount[key]
-    })).sort((a, b) => b.value - a.value).slice(0, 5); // İlk 5 kategori
+    })).sort((a, b) => b.value - a.value).slice(0, 5);
   }, [allOrders, allProducts]);
 
   const COLORS = ['#4f46e5', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'];
@@ -128,7 +154,43 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Gösterge Paneli (Dashboard)</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-4">
+        <h1 className="text-2xl font-extrabold text-gray-900">Gösterge Paneli (Dashboard)</h1>
+        <div className="flex flex-wrap gap-2">
+          <button 
+            onClick={() => exportToCSV(
+              allOrders.map(o => ({
+                Siparis_ID: o._id,
+                Musteri: o.kullanici?.adSoyad || 'Bilinmiyor',
+                Tutar: `${o.toplamTutar} TL`,
+                Durum: o.siparisDurumu,
+                Tarih: new Date(o.createdAt).toLocaleDateString('tr-TR')
+              })), 'Artisana_Siparis_Raporu'
+            )}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 active:scale-95 transition-all"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Sipariş Raporu (CSV)
+          </button>
+          <button 
+            onClick={() => exportToCSV(
+              topProducts.map(p => ({
+                Urun_Ismi: p.isim,
+                Satis_Adedi: p.satisAdedi,
+                Ciro: `${p.ciro} TL`
+              })), 'Artisana_En_Cok_Satanlar'
+            )}
+            className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 active:scale-95 transition-all"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            En Çok Satanlar (CSV)
+          </button>
+        </div>
+      </div>
 
       {/* İstatistik Kartları */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

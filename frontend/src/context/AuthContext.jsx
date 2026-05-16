@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
+import { toast } from 'react-hot-toast';
 
 const AuthContext = createContext();
 
@@ -17,11 +18,13 @@ export const AuthProvider = ({ children }) => {
   const login = (userData) => {
     setUser(userData);
     localStorage.setItem('userInfo', JSON.stringify(userData));
+    toast.success(`Hoş geldin, ${userData.adSoyad}! 🚀`);
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('userInfo');
+    toast.success('Başarıyla çıkış yapıldı. 👋');
   };
 
   return (

@@ -1,103 +1,68 @@
-# AI E-Ticaret v2.0 — Implementation Plan (Güncel Durum & Yol Haritası)
+# AI E-Ticaret v3.0 — Master Implementation Plan (Jüri & Hoca Sunumu Odaklı Yol Haritası)
 
-Bu belge, projenin v1.0 ve v2.0 süreçlerindeki ilerlemesini analiz eder, tamamlanan aşamaları belgeler ve geriye kalan geliştirme hedeflerini net bir yol haritası olarak sunar.
-
----
-
-## 📊 Mevcut Durum Özeti & İlerleme Tablosu
-
-Şu ana kadar v2.0 planındaki en büyük ve kritik modüllerin birçoğu başarıyla tamamlandı. Aşağıdaki tabloda hangi aşamada olduğumuzu net bir şekilde görebilirsiniz:
-
-| Milestone (Aşama) | Modül / Özellik | Durum | İlerleme Oranı |
-|---|---|---|---|
-| **Milestone 1** | 1.1 Ürün Arama + Gelişmiş Filtreleme | ✅ Tamamlandı | **100%** |
-| | 1.2 Mobil Responsive Navbar (Hamburger Menü) | ✅ Tamamlandı | |
-| | 1.3 Favori Listesi (Wishlist API & UI) | ✅ Tamamlandı | |
-| **Milestone 2** | 2.1 Stok Yönetimi (Sipariş anında düşme & İade) | ✅ Tamamlandı | **100%** |
-| | 2.2 Ödeme Entegrasyonu (Checkout Form & Mock Servis) | ✅ Tamamlandı | |
-| **Milestone 3** | 3.1 Admin Kullanıcı Yönetimi (Listeleme, Rol, Silme) | ✅ Tamamlandı | **100%** |
-| | 3.2 Dashboard Analitik Grafikleri (Recharts & Özetler) | ✅ Tamamlandı | |
-| | 3.3 Resim Yükleme (Cloudinary / Multer Entegrasyonu) | ✅ Tamamlandı | |
-| **Milestone 4** | 4.1 Gemini API ile Akıllı Chatbot Entegrasyonu | ✅ Tamamlandı | **100%** |
-| | 4.2 Gelişmiş Öneri Algoritması (Ağırlıklı Puanlama) | ✅ Tamamlandı | |
-| **Milestone 5** | 5.1 Backend Güvenlik (Rate Limiting, Joi, Şifre Sıfırlama) | ✅ Tamamlandı | **100%** |
-| | 5.2 Frontend Performans (Skeleton Loading & Lazy Load) | ✅ Tamamlandı | |
-| **Milestone 6** | 6.1 Mock Veri Setini 4 Katına Çıkarma (Zengin Seeder) | ✅ Tamamlandı | **100%** |
-| (Premium UI/UX) | 6.2 İleri Düzey Modern Animasyonlar (Framer Motion) | ✅ Tamamlandı | |
+Bu belge, "Artisana" yapay zeka destekli e-ticaret platformunun tamamlanan v2.0 sürümü üzerinde yapılmış, özellikle **Akademik Jüri ve Hoca Sunumlarında en yüksek görsel etkiyi (WOW Effect / Göz Boyama) yaratacak** v3.0 Geliştirme Yol Haritasını detaylandırır.
 
 ---
 
-## 🚀 Geriye Kalan Geliştirme Planı (Ne Kadar İlerlememiz Lazım?)
+## 🎭 Neden "Görsel Etki" Odaklı Bir Plan?
 
-Projenin tam anlamıyla kusursuz, premium ve canlı ortama çıkmaya hazır (production-ready) bir v2.0 sürümü olması için önümüzde 4 ana odak noktası bulunmaktadır.
+Sunumlarda hocalar arka plandaki güvenlik önlemlerini (Rate Limiting, Joi Validation) veya veritabanı şemalarını doğrudan göremezler. Bir projenin "A+" almasını sağlayan en temel unsur; ekrandaki dinamizm, profesyonel geri bildirimler, canlı animasyonlar ve gerçek dünya hissi veren (fatura çıktısı, kargo takibi gibi) somut özelliklerdir.
 
----
-
-### 📌 Adım 1: Milestone 3.3 — Admin Resim Yükleme (Cloudinary)
-> Şu an yöneticiler ürün eklerken resim URL'si girmek zorunda kalıyor. Bu adımla birlikte bilgisayardan doğrudan dosya yükleme yeteneği kazandıracağız.
-
-#### Yapılacaklar:
-- **Backend (`uploadMiddleware.js`):** Multer kütüphanesi ile dosya yükleme altyapısı kurulacak ve Cloudinary API entegrasyonu yapılacak.
-- **Rota (`POST /api/upload`):** Yüklenen dosyayı Cloudinary'ye gönderip güvenli URL'sini dönen endpoint oluşturulacak.
-- **Frontend (`AdminProducts.jsx`):** Ürün ekleme/düzenleme modalındaki URL metin kutusu, modern bir "Sürükle-Bırak" (Drag & Drop) dosya yükleme alanına dönüştürülecek. Yükleme esnasında progress bar (yükleniyor animasyonu) gösterilecek.
+Bu doğrultuda yol haritamız tamamen **"Hocanın Gözünü Boyayacak"** görsel şovlara göre yeniden önceliklendirilmiştir:
 
 ---
 
-### 📌 Adım 2: Milestone 4 — Gerçek AI Entegrasyonu (Gemini API)
-> Projenin adındaki "AI Destekli" vurgusunu tam anlamıyla hissettirecek, yapay zekayı statik kelime eşleştirmesinden çıkarıp dinamik ve akıllı bir yapıya kavuşturacağız.
+## 🏆 Bölüm 1: Hoca Sunumu İçin "Göz Boyayıcı" Vitrin Özellikleri (Milestones)
 
-#### 4.1 Gemini API ile Akıllı Chatbot
-- **Backend (`chatbotController.js`):** Google Gemini API (`@google/generative-ai`) entegre edilecek.
-- **System Prompt & Context:** Gemini'ye e-ticaret mağazasının ürün kataloğu, fiyatları ve kullanıcının sipariş geçmişi prompt bağlamı (context) olarak iletilecek. Böylece asistan "5000 TL altı en iyi oyuncu kulaklığı hangisi?" gibi sorulara mağazadaki gerçek ürünleri analiz ederek yanıt verecek.
-- **Sohbet Geçmişi:** Kullanıcının önceki mesajları hafızada tutularak doğal bir diyalog akışı sağlanacak.
+Aşağıdaki tablo, sunumda hocayı en çok etkileyecek özelliklerin sırasını göstermektedir:
 
-#### 4.2 Ağırlıklı ve Akıllı Öneri Algoritması
-- **Backend (`recommendationController.js`):** Sadece aynı kategoriye bakma mantığı yerine; ürünlerin ortalama puanı, sipariş edilme sıklığı ve kullanıcının sepetindeki ürünlerle olan ilişkisi analiz edilerek ağırlıklı bir formül `(yüksek_puan × 0.4) + (sipariş_sayısı × 0.3) + (fiyat_yakınlığı × 0.3)` devreye alınacak.
-
----
-
-### 📌 Adım 3: Milestone 5 — Güvenlik & Performans (Production Ready)
-> Uygulamayı canlı ortama (production) çıkmaya hazır, güvenli ve hızlı hale getireceğiz.
-
-#### 5.1 Backend Güvenlik & Doğrulama
-- **Rate Limiting (`rateLimiter.js`):** `express-rate-limit` paketi ile `/api/auth/login` ve `/api/auth/register` rotalarına brute-force saldırılarını önlemek için dakikada maksimum 10 istek sınırı konulacak.
-- **Input Validation (`validationMiddleware.js`):** Joi şemaları oluşturularak gelen tüm veriler (email formatı, şifre zorluğu, ürün fiyat bilgileri) controller'a ulaşmadan middleware katmanında filtrelenecek.
-- **Şifre Sıfırlama (`authController.js`):** Kullanıcıların şifrelerini unuttuklarında e-posta yoluyla sıfırlama linki (`/api/auth/forgot-password` ve `/api/auth/reset-password/:token`) alabilmeleri sağlanacak.
-
-#### 5.2 Frontend Performans & UX
-- **Skeleton Loading (`SkeletonCard.jsx`):** Ürünler ve siparişler yüklenirken ekranda boşluk veya donma yerine modern, akıcı iskelet (shimmer) yükleme animasyonları gösterilecek.
-- **Lazy Loading & Code Splitting:** React bileşenleri `React.lazy()` ve `Suspense` ile sayfa bazlı yüklenerek ilk açılış hızı (FCP/TTI) maksimize edilecek.
+| Milestone | Modül / Özellik | Sunumdaki Görsel Etkisi (WOW Effect) | Durum | Öncelik |
+|---|---|---|---|---|
+| **Milestone 1** | **1.1 Profesyonel Toast Bildirimleri (Hot Toast)** | Sepete ekleme veya favoriye almada sağ üstte beliren şık, animasyonlu bildirimler. | ✅ Tamamlandı | 🌟 En Yüksek |
+| (Görsel Şovlar) | **1.2 Canlı Açık Artırma Geri Sayımı & Teklif** | Ürün detayında atan nabız animasyonlu teklif paneli ve canlı geri sayım sayacı. | ✅ Tamamlandı | 🌟 En Yüksek |
+| **Milestone 2** | **2.1 PDF Fatura İndirme (jsPDF & Logo)** | Sipariş sonrasında tek tıkla inen, logolu, barkodlu profesyonel PDF fatura. | ✅ Tamamlandı | 🔥 Çok Yüksek |
+| (Somut Çıktılar) | **2.2 Görsel Kargo Takip Stepper'ı** | Sipariş detayında kargo aşamalarını gösteren animasyonlu ilerleme çubuğu. | ✅ Tamamlandı | 🔥 Çok Yüksek |
+| **Milestone 3** | **3.1 Ana Sayfa Flaş İndirim Banner'ı** | Ana sayfa tepesinde geri sayım sayacı içeren, dikkat çekici indirim vitrini. | ✅ Tamamlandı | Yüksek |
+| (Dinamizm) | **3.2 Sepette Dinamik Kupon İndirimi** | Kupon girildiği anda ekranda konfeti/parlama efektiyle düşen fiyat animasyonu. | ✅ Tamamlandı | Yüksek |
+| **Milestone 4** | **4.1 Excel/CSV Dışa Aktarma Butonları** | Admin panelindeki tabloları tek tıkla Excel/CSV olarak bilgisayara indirme. | ✅ Tamamlandı | Orta |
+| (Admin Şovları) | **4.2 Kullanıcı Profil & Adres Defteri** | Şık sekmelerle donatılmış, avatar içeren modern bir profil sayfası. | ✅ Tamamlandı | Orta |
 
 ---
 
-### 📌 Adım 4: Milestone 6 — Zengin Veri Seti & İleri Düzey Animasyonlar (Premium WOW Effect) ✨ [YENİ]
-> Kullanıcı siteye girdiğinde hem zengin ürün çeşitliliğiyle karşılaşacak hem de üst düzey, premium animasyonlarla büyüleyici bir deneyim yaşayacak.
+## 🛠️ Bölüm 2: Detaylı Görev Kırılımı (Sunum Odaklı Kırılım)
 
-#### 6.1 Mock Veri Setini 4 Katına Çıkarma (Zengin Seeder)
-- **Veritabanı Çeşitliliği (`seeder.js`):** Mevcut 6-8 ürünlük kısıtlı veri yerine, en az 30-40 adet gerçekçi, yüksek çözünürlüklü görsellere sahip ürün eklenecek.
-- **Geniş Kategoriler:** Elektronik, Giyim & Moda, Ev & Yaşam, Kitap, Kozmetik & Kişisel Bakım gibi 5-6 farklı kategori oluşturulacak.
-- **Gerçekçi Yorum & Puan Simülasyonu:** Her ürüne 3-5 adet gerçekçi, farklı duygu durumlarına sahip kullanıcı yorumu ve puanlaması (⭐ 1-5) eklenecek.
-- **Sipariş Geçmişi Simülasyonu:** AI öneri sisteminin ve analitik grafiklerin dolu dolu çalışması için seeder içerisine zengin geçmiş sipariş verileri dahil edilecek.
+### 📌 Milestone 1: Görsel Şovlar (İlk İzlenim)
+#### 1.1 Profesyonel Toast Bildirimleri (`react-hot-toast`)
+- **Kurulum:** `npm install react-hot-toast`
+- **Görsel Şov:** Sitedeki tüm buton etkileşimlerine (Sepete Ekle, Favoriye Ekle, Giriş Yap, Hata Durumu) entegre edilecek. Hoca butona tıkladığı an sessiz bir işlem yerine ekranın sağ üstünde pürüzsüzce kayarak gelen, yeşil tik ikonlu şık bir bildirim görecek.
 
-#### 6.2 İleri Düzey Modern Animasyonlar (Framer Motion & Tailwind Micro-interactions)
-Uygulamanın her noktası dinamik ve canlı bir his verecek şekilde animasyonlarla donatılacak:
-- **Sayfa Geçişleri (Page Transitions):** Sayfalar arası geçişlerde `framer-motion` ile yumuşak fade-in/out ve slide animasyonları.
-- **Kademeli Ürün Listeleme (Staggered Grid):** Ürünler sayfasında kartların tek seferde pat diye çıkması yerine, yukarıdan aşağıya doğru zarifçe ve sırayla belirmesi (stagger effect).
-- **Kart Hover Efektleri:** Ürün kartlarının üzerine gelindiğinde hafifçe yukarı kalkması (3D tilt/lift), gölgenin parlaması (glow) ve ürün resminin pürüzsüzce yakınlaşması (scale).
-- **Akıcı Çekmeceler (Drawers):** Sepet (Cart) ve Favoriler (Wishlist) açılırken ekranın sağından pürüzsüz bir slide-in hareketi ve arkada blur efekti (glassmorphism backdrop).
-- **AI Chatbot Etkileşimleri:** Chatbot butonunda dikkat çekici, hafif bir nefes alma (pulse/bounce) animasyonu. Mesaj balonlarının açılırken yaylanarak (spring) ekrana gelmesi.
-- **Checkout Başarı Ekranı:** Ödeme tamamlandığında ekranda patlayan konfeti animasyonu (`canvas-confetti`) ve dinamik olarak çizilen onay tikleri.
-- **Mikro Etkileşimler:** Butonlara tıklandığında hafifçe küçülüp büyüme (tap scale) ve aktif filtrelerde akıcı geçişler.
+#### 1.2 Canlı Açık Artırma Geri Sayımı & Teklif Paneli
+- **Görsel Şov (`ProductDetail.jsx`):** Açık artırmadaki ürünlerde normal buton yerine, etrafında hafifçe parlayan (glow effect) bir **"Canlı Teklif Paneli"** yer alacak.
+- **Geri Sayım Sayacı (Countdown):** Ekranda saniyeleri tek tek geriye sayan büyük, dijital bir sayaç (`03 Saat 14 Dakika 22 Saniye`) yer alacak. Hoca teklif verdiğinde en yüksek teklif anında animasyonlu olarak güncellenecek.
 
 ---
 
-## 🎯 Sonuç ve Önerilen Sıradaki İşlem
+### 📌 Milestone 2: Somut Çıktılar & Gerçekçilik
+#### 2.1 PDF Fatura İndirme (`jspdf` & `html2canvas`)
+- **Görsel Şov (`MyOrders.jsx`):** Sipariş geçmişindeki her siparişin yanına **"Faturayı İndir (PDF)"** butonu konulacak. Hoca tıkladığı anda tarayıcıda Artisana logolu, sipariş kalemlerini tablo halinde gösteren ve altında QR kod/barkod barındıran resmi bir fatura belgesi inip açılacak. (Hocaların en sevdiği somut proje çıktısı!).
 
-Mevcut durumda projenin **%75'lik kısmı tamamen bitmiş ve GitHub'a aktarılmış durumdadır.** Geriye kalan kısımlar için önerilen çalışma sırası şu şekildedir:
+#### 2.2 Görsel Kargo Takip Stepper'ı
+- **Görsel Şov (`MyOrders.jsx`):** Siparişin durumunu sadece metin olarak yazmak yerine; `[ Sipariş Alındı ✅ ] ─── [ Hazırlanıyor 📦 ] ─── [ Kargoda 🚚 ] ─── [ Teslim Edildi ]` şeklinde görsel, aktif adımı parlayan modern bir stepper çubuğu eklenecek.
 
-1. **Öncelik 1:** Milestone 6.1 (Mock Verileri 4 Katına Çıkarma) — Sitenin hemen dolu dolu ve zengin görünmesini sağlar.
-2. **Öncelik 2:** Milestone 6.2 (Modern Animasyonlar) — Sitenin premium ve büyüleyici hissettirmesini sağlar.
-3. **Öncelik 3:** Milestone 3.3 (Resim Yükleme) — Admin panelini tamamlar.
-4. **Öncelik 4:** Milestone 4 (Gemini AI) & Milestone 5 (Güvenlik) — Projeyi zirveye taşır.
+---
 
-Hangisinden başlamak isterseniz komut vermeniz yeterlidir!
+### 📌 Milestone 3: Dinamizm & Pazarlama
+#### 3.1 Ana Sayfa Flaş İndirim Banner'ı
+- **Görsel Şov (`Home.jsx` / `Navbar.jsx`):** Sitenin en üst kısmına `🔥 Günün Flaş İndirimi: Seçili Ürünlerde %50 İndirim! Kalan Süre: 04:12:39` şeklinde canlı geri sayım yapan, dikkat çekici ve premium bir duyuru çubuğu.
+
+#### 3.2 Sepette Dinamik Kupon İndirimi
+- **Görsel Şov (`Cart.jsx`):** Sepet sayfasında kupon kodu (`WELCOME10`) girilip uygulandığında, toplam tutarın üzerinin çizilip yeni indirimli tutarın yeşil bir parlamayla belirmesi.
+
+---
+
+## 🎯 Sunum İçin Önerilen Başlangıç Noktası
+
+Hocayı sunumun ilk saniyesinde etkilemek için en hızlı ve en gösterişli adım:
+👉 **Milestone 1.1 (Profesyonel Toast Bildirimleri)** ile başlayıp hemen ardından 👉 **Milestone 1.2 (Canlı Açık Artırma Geri Sayımı)** kısmına geçmektir.
+
+Hangisinden başlamak istersen komut vermen yeterli kanka! 🚀

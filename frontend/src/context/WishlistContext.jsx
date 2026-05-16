@@ -1,4 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { useAuth } from './AuthContext';
 
 const WishlistContext = createContext();
@@ -36,7 +37,7 @@ export function WishlistProvider({ children }) {
   }, [user]);
 
   const addToWishlist = async (product) => {
-    if (!user) return alert("Favorilere eklemek için giriş yapmalısınız.");
+    if (!user) return toast.error("Favorilere eklemek için giriş yapmalısınız.");
     
     try {
       const response = await fetch(`http://localhost:5001/api/wishlist/${product._id}`, {
@@ -45,12 +46,14 @@ export function WishlistProvider({ children }) {
       });
       if (response.ok) {
         setWishlist(prev => [...prev, product]);
+        toast.success(`${product.isim} favorilere eklendi! ❤️`);
       } else {
         const data = await response.json();
-        alert(data.message || 'Hata oluştu');
+        toast.error(data.message || 'Hata oluştu');
       }
     } catch (error) {
       console.error('Favorilere eklenemedi:', error);
+      toast.error('Favorilere eklenemedi.');
     }
   };
 
@@ -64,6 +67,7 @@ export function WishlistProvider({ children }) {
       });
       if (response.ok) {
         setWishlist(prev => prev.filter(p => p._id !== productId));
+        toast.error('Favorilerden çıkarıldı. 💔');
       }
     } catch (error) {
       console.error('Favoriden çıkarılamadı:', error);

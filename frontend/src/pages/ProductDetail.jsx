@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
+import { toast } from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -23,7 +24,7 @@ export default function ProductDetail() {
   // Auction states
   const [currentBid, setCurrentBid] = useState(0);
   const [userBid, setUserBid] = useState('');
-  const [timeLeft, setTimeLeft] = useState(3600 * 24); // 24 hours countdown for demo
+  const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -32,7 +33,11 @@ export default function ProductDetail() {
         if (!response.ok) throw new Error('Ürün bulunamadı');
         const data = await response.json();
         setProduct(data);
-        setCurrentBid(data.fiyat);
+        setCurrentBid(data.enYuksekTeklif || data.baslangicFiyati || data.fiyat);
+        if (data.bitisTarihi) {
+          const diff = Math.floor((new Date(data.bitisTarihi) - new Date()) / 1000);
+          setTimeLeft(diff > 0 ? diff : 0);
+        }
         setLoading(false);
       } catch (error) {
         console.error("Hata:", error);
@@ -65,7 +70,7 @@ export default function ProductDetail() {
       { name: 'Şub', fiyat: Math.round(base * 0.90) },
       { name: 'Mar', fiyat: Math.round(base * 1.05) },
       { name: 'Nis', fiyat: Math.round(base * 1.15) },
-      { name: 'May', fiyat: Math.round(base * 1.05) },
+      { name: 'May', margin: Math.round(base * 1.05) },
       { name: 'Haz', fiyat: base }, // Current price
     ];
   }, [product]);
@@ -116,11 +121,12 @@ export default function ProductDetail() {
         setReviews(prev => [data, ...prev]);
         setReviewText('');
         setReviewPuan(5);
+        toast.success('Yorumunuz başarıyla eklendi! 🌟');
       } else {
-        alert(data.message || 'Yorum gönderilemedi');
+        toast.error(data.message || 'Yorum gönderilemedi');
       }
     } catch (error) {
-      alert('Yorum gönderilirken hata oluştu');
+      toast.error('Yorum gönderilirken hata oluştu');
     } finally {
       setReviewLoading(false);
     }
@@ -160,14 +166,38 @@ export default function ProductDetail() {
     addToCart(product);
   };
 
-  const handlePlaceBid = () => {
-    const bidAmount = parseInt(userBid);
-    if (isNaN(bidAmount) || bidAmount <= currentBid) {
-      alert("Lütfen mevcut tekliften daha yüksek bir tutar girin.");
+  const handlePlaceBid = async () => {
+    if (!user) {
+      toast.error("Teklif vermek için giriş yapmalısınız.");
       return;
     }
-    setCurrentBid(bidAmount);
-    setUserBid('');
+    const bidAmount = parseInt(userBid);
+    if (isNaN(bidAmount) || bidAmount <= currentBid) {
+      toast.error(`Lütfen mevcut tekliften (${currentBid.toLocaleString('tr-TR')} ₺) daha yüksek bir tutar girin.`);
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5001/api/products/${id}/bid`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`
+        },
+        body: JSON.stringify({ teklifTutari: bidAmount })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setProduct(data);
+        setCurrentBid(data.enYuksekTeklif);
+        setUserBid('');
+        toast.success(`🎉 Teklifiniz (${bidAmount.toLocaleString('tr-TR')} ₺) başarıyla alındı!`);
+      } else {
+        toast.error(data.message || 'Teklif verilemedi.');
+      }
+    } catch (error) {
+      toast.error('Teklif verilirken hata oluştu.');
+    }
   };
 
   const formatTime = (seconds) => {
@@ -214,11 +244,11 @@ export default function ProductDetail() {
             />
           </div>
           {product.acikArtirmadaMi && (
-            <div className="absolute top-6 left-6 bg-red-500 text-white text-sm font-bold px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+            <div className="absolute top-6 left-6 bg-red-500 text-white text-sm font-bold px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-pulse">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z" />
               </svg>
-              Açık Artırmada
+              Canlı Açık Artırma
             </div>
           )}
         </div>
@@ -250,41 +280,73 @@ export default function ProductDetail() {
           
           <div className="mt-auto pt-8 border-t border-gray-100">
             {product.acikArtirmadaMi ? (
-              <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-2xl p-6">
+              <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-3xl p-6 shadow-sm">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                   <h3 className="text-orange-800 font-bold text-lg flex items-center gap-2">
-                    <svg className="w-6 h-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-6 h-6 animate-pulse text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Kapanışa Kalan Süre:
                   </h3>
-                  <div className="text-2xl font-black text-orange-600 bg-white px-5 py-2 rounded-xl shadow-sm border border-orange-100 font-mono tracking-wider">
+                  <div className="text-3xl font-black text-red-600 bg-white px-6 py-3 rounded-2xl shadow-sm border border-red-100 font-mono tracking-wider animate-pulse">
                     {formatTime(timeLeft)}
                   </div>
                 </div>
                 
-                <div className="bg-white p-5 rounded-xl mb-6 shadow-sm border border-orange-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div className="bg-white p-5 rounded-2xl mb-6 shadow-sm border border-orange-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                   <span className="text-gray-500 font-medium">Mevcut En Yüksek Teklif:</span>
                   <span className="text-4xl font-black text-gray-900">{currentBid.toLocaleString('tr-TR')} ₺</span>
                 </div>
                 
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
                   <input 
                     type="number" 
                     value={userBid}
                     onChange={(e) => setUserBid(e.target.value)}
                     placeholder={`${(currentBid + 100).toLocaleString('tr-TR')} ₺ veya üzeri`}
-                    className="flex-grow px-5 py-4 rounded-xl border-2 border-orange-200 focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none text-lg font-bold text-gray-900 transition-all placeholder-gray-400"
+                    className="flex-grow px-5 py-4 rounded-2xl border-2 border-orange-200 focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none text-lg font-bold text-gray-900 transition-all placeholder-gray-400"
                   />
                   <button 
                     onClick={handlePlaceBid}
-                    className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-xl font-bold text-xl transition-colors shadow-lg shadow-orange-200 flex items-center justify-center gap-2 flex-shrink-0"
+                    className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-8 py-4 rounded-2xl font-bold text-xl transition-all shadow-lg shadow-orange-200 flex items-center justify-center gap-2 flex-shrink-0 active:scale-95"
                   >
                     Teklif Ver
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </button>
+                </div>
+
+                {/* Teklif Geçmişi Tablosu */}
+                <div className="border-t border-orange-200 pt-6">
+                  <h4 className="font-bold text-orange-900 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    Canlı Teklif Geçmişi
+                  </h4>
+                  <div className="space-y-3 max-h-48 overflow-y-auto pr-2">
+                    {product.teklifGecmisi && product.teklifGecmisi.length > 0 ? (
+                      product.teklifGecmisi.map((teklif, idx) => (
+                        <div key={idx} className="bg-white p-3.5 rounded-xl border border-orange-100 flex justify-between items-center shadow-sm hover:border-orange-200 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-orange-500 to-red-500 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                              {teklif.adSoyad ? teklif.adSoyad[0] : 'A'}
+                            </div>
+                            <div>
+                              <div className="font-bold text-gray-900 text-sm">{teklif.adSoyad || 'Anonim'}</div>
+                              <div className="text-xs text-gray-400">{new Date(teklif.tarih).toLocaleTimeString('tr-TR')}</div>
+                            </div>
+                          </div>
+                          <div className="font-black text-orange-600 text-base bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100">
+                            {teklif.teklifTutari.toLocaleString('tr-TR')} ₺
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">Henüz teklif verilmemiş. İlk teklifi siz verin!</p>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (

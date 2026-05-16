@@ -442,7 +442,40 @@ const importData = async () => {
     await Product.deleteMany(); 
     
     // Yeni zengin veri setini ekle
-    await Product.insertMany(mockProducts);
+    const enrichedProducts = mockProducts.map(prod => {
+      if (prod.acikArtirmadaMi) {
+        // Bitiş tarihini şu andan itibaren 5 saat ile 48 saat arasında dinamik ayarla
+        const futureDate = new Date();
+        futureDate.setHours(futureDate.getHours() + 5 + Math.floor(Math.random() * 40));
+        
+        const baslangic = Math.floor(prod.fiyat * 0.8);
+        const enYuksek = Math.floor(prod.fiyat * 0.95);
+
+        return {
+          ...prod,
+          bitisTarihi: futureDate,
+          baslangicFiyati: baslangic,
+          enYuksekTeklif: enYuksek,
+          teklifGecmisi: [
+            {
+              kullanici: new mongoose.Types.ObjectId(),
+              adSoyad: "Ahmet Yılmaz",
+              teklifTutari: enYuksek,
+              tarih: new Date(Date.now() - 3600000) // 1 saat önce
+            },
+            {
+              kullanici: new mongoose.Types.ObjectId(),
+              adSoyad: "Selin Kaya",
+              teklifTutari: baslangic + 500,
+              tarih: new Date(Date.now() - 7200000) // 2 saat önce
+            }
+          ]
+        };
+      }
+      return prod;
+    });
+
+    await Product.insertMany(enrichedProducts);
     
     console.log(`📦 Toplam ${mockProducts.length} adet zengin mock ürün başarıyla veritabanına eklendi!`);
     process.exit();

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -23,6 +24,34 @@ export default function AdminOrders() {
     fetchOrders();
   }, [user]);
 
+  const exportToCSV = (data, filename) => {
+    const bom = '\uFEFF';
+    if (!data || !data.length) {
+      toast.error('Dışa aktarılacak veri bulunamadı!');
+      return;
+    }
+    
+    const headers = Object.keys(data[0]).join(';');
+    const rows = data.map(row => {
+      return Object.values(row).map(val => {
+        if (val === null || val === undefined) return '';
+        const str = String(val).replace(/"/g, '""');
+        return `"${str}"`;
+      }).join(';');
+    }).join('\n');
+    
+    const csvContent = bom + headers + '\n' + rows;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(`📊 ${filename}.csv başarıyla dışa aktarıldı!`);
+  };
+
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       const res = await fetch(`http://localhost:5001/api/orders/${orderId}/deliver`, {
@@ -35,8 +64,9 @@ export default function AdminOrders() {
       });
       const updatedOrder = await res.json();
       setOrders(prev => prev.map(o => o._id === updatedOrder._id ? updatedOrder : o));
+      toast.success('Sipariş durumu güncellendi!');
     } catch (error) {
-      alert('Durum güncellenemedi: ' + error.message);
+      toast.error('Durum güncellenemedi: ' + error.message);
     }
   };
 
@@ -54,7 +84,27 @@ export default function AdminOrders() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Sipariş Yönetimi</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <h1 className="text-2xl font-bold text-gray-900">Sipariş Yönetimi</h1>
+        <button 
+          onClick={() => exportToCSV(
+            orders.map(o => ({
+              Siparis_ID: o._id,
+              Musteri: o.kullanici?.adSoyad || 'Bilinmiyor',
+              Tutar: `${o.toplamTutar} TL`,
+              Durum: o.siparisDurumu,
+              Tarih: new Date(o.createdAt).toLocaleDateString('tr-TR'),
+              Adres: o.kargoAdresi
+            })), 'Artisana_Tum_Siparisler_Raporu'
+          )}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 active:scale-95 transition-all"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Excel / CSV İndir
+        </button>
+      </div>
 
       {orders.length === 0 ? (
         <div className="bg-white p-12 text-center rounded-2xl shadow-sm border border-gray-100">

@@ -10,6 +10,16 @@ export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Flash Sale Countdown State
+  const [flashTimeLeft, setFlashTimeLeft] = useState(3600 * 3 + 45 * 60 + 12); // 3 hours, 45 mins, 12 secs
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setFlashTimeLeft(prev => prev > 0 ? prev - 1 : 0);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -24,6 +34,15 @@ export default function Home() {
     };
     fetchProducts();
   }, []);
+
+  const formatFlashTime = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return { h: h.toString().padStart(2, '0'), m: m.toString().padStart(2, '0'), s: s.toString().padStart(2, '0') };
+  };
+
+  const flashTime = formatFlashTime(flashTimeLeft);
 
   if (loading) return <div className="text-center py-20">Yükleniyor...</div>;
 
@@ -45,6 +64,53 @@ export default function Home() {
             </Link>
             <Link to="/register" className="mt-3 sm:mt-0 w-full flex items-center justify-center px-8 py-3 border border-white text-base font-medium rounded-lg text-white bg-transparent hover:bg-indigo-600 md:py-4 md:text-lg md:px-10 transition-colors">
               Kayıt Ol
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Flash Sale Banner */}
+      <div className="bg-gradient-to-r from-red-600 via-pink-600 to-purple-600 text-white py-8 px-4 sm:px-6 lg:px-8 shadow-xl relative overflow-hidden">
+        {/* Dekoratif Arka Plan Işıkları */}
+        <div className="absolute -top-24 -left-24 w-48 h-48 bg-white opacity-10 rounded-full blur-2xl"></div>
+        <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-yellow-300 opacity-10 rounded-full blur-2xl"></div>
+        
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="flex items-center gap-4 text-center lg:text-left">
+            <span className="text-5xl animate-bounce">⚡</span>
+            <div>
+              <span className="bg-yellow-300 text-gray-900 text-xs font-black uppercase px-3 py-1 rounded-full shadow-sm">Sınırlı Süre</span>
+              <h2 className="text-2xl sm:text-3xl font-black mt-1 tracking-wide">Yapay Zeka Flaş İndirim Şovu</h2>
+              <p className="text-pink-100 font-medium text-base mt-0.5">Seçili akıllı ev ve teknoloji ürünlerinde anında %50 net indirim!</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="flex items-center gap-3 bg-black/30 backdrop-blur-md p-3.5 rounded-2xl border border-white/20 shadow-inner">
+              <div className="flex flex-col items-center bg-white text-gray-900 px-4 py-2 rounded-xl shadow-md min-w-[64px]">
+                <span className="text-2xl font-black font-mono leading-none">{flashTime.h}</span>
+                <span className="text-[10px] font-extrabold uppercase text-gray-500 mt-1">Saat</span>
+              </div>
+              <span className="text-2xl font-black text-pink-200 animate-pulse">:</span>
+              <div className="flex flex-col items-center bg-white text-gray-900 px-4 py-2 rounded-xl shadow-md min-w-[64px]">
+                <span className="text-2xl font-black font-mono leading-none">{flashTime.m}</span>
+                <span className="text-[10px] font-extrabold uppercase text-gray-500 mt-1">Dakika</span>
+              </div>
+              <span className="text-2xl font-black text-pink-200 animate-pulse">:</span>
+              <div className="flex flex-col items-center bg-white text-gray-900 px-4 py-2 rounded-xl shadow-md min-w-[64px]">
+                <span className="text-2xl font-black font-mono leading-none">{flashTime.s}</span>
+                <span className="text-[10px] font-extrabold uppercase text-gray-500 mt-1">Saniye</span>
+              </div>
+            </div>
+
+            <Link 
+              to="/products" 
+              className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-extrabold text-lg px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 flex-shrink-0"
+            >
+              İndirimleri Yakala
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
             </Link>
           </div>
         </div>

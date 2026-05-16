@@ -40,7 +40,32 @@ const productSchema = new mongoose.Schema({
   yorumSayisi: {
     type: Number,
     default: 0
-  }
+  },
+  bitisTarihi: {
+    type: Date
+  },
+  baslangicFiyati: {
+    type: Number,
+    default: 0
+  },
+  enYuksekTeklif: {
+    type: Number,
+    default: 0
+  },
+  teklifGecmisi: [
+    {
+      kullanici: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      adSoyad: String,
+      teklifTutari: Number,
+      tarih: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ]
 }, {
   timestamps: true
 });

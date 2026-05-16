@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -23,6 +24,34 @@ export default function AdminUsers() {
     fetchUsers();
   }, [user]);
 
+  const exportToCSV = (data, filename) => {
+    const bom = '\uFEFF';
+    if (!data || !data.length) {
+      toast.error('Dışa aktarılacak veri bulunamadı!');
+      return;
+    }
+    
+    const headers = Object.keys(data[0]).join(';');
+    const rows = data.map(row => {
+      return Object.values(row).map(val => {
+        if (val === null || val === undefined) return '';
+        const str = String(val).replace(/"/g, '""');
+        return `"${str}"`;
+      }).join(';');
+    }).join('\n');
+    
+    const csvContent = bom + headers + '\n' + rows;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(`📊 ${filename}.csv başarıyla dışa aktarıldı!`);
+  };
+
   const handleRoleChange = async (userId, newRole) => {
     if (!window.confirm('Kullanıcı rolünü değiştirmek istediğinize emin misiniz?')) return;
     try {
@@ -36,12 +65,13 @@ export default function AdminUsers() {
       });
       if (res.ok) {
         setUsers(users.map(u => u._id === userId ? { ...u, rol: newRole } : u));
+        toast.success('Kullanıcı rolü güncellendi!');
       } else {
         const errData = await res.json();
-        alert(errData.message || 'Rol değiştirilemedi');
+        toast.error(errData.message || 'Rol değiştirilemedi');
       }
     } catch (error) {
-      alert('Rol değiştirilirken hata oluştu');
+      toast.error('Rol değiştirilirken hata oluştu');
     }
   };
 
@@ -54,12 +84,13 @@ export default function AdminUsers() {
       });
       if (res.ok) {
         setUsers(users.filter(u => u._id !== userId));
+        toast.success('Kullanıcı silindi.');
       } else {
         const errData = await res.json();
-        alert(errData.message || 'Kullanıcı silinemedi');
+        toast.error(errData.message || 'Kullanıcı silinemedi');
       }
     } catch (error) {
-      alert('Kullanıcı silinirken hata oluştu');
+      toast.error('Kullanıcı silinirken hata oluştu');
     }
   };
 
@@ -67,7 +98,26 @@ export default function AdminUsers() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Kullanıcı Yönetimi</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-gray-900">Kullanıcı Yönetimi</h1>
+        <button 
+          onClick={() => exportToCSV(
+            users.map(u => ({
+              Kullanici_ID: u._id,
+              Ad_Soyad: u.adSoyad,
+              Email: u.email,
+              Rol: u.rol,
+              Kayit_Tarihi: new Date(u.createdAt).toLocaleDateString('tr-TR')
+            })), 'Artisana_Kullanicilar_Raporu'
+          )}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 active:scale-95 transition-all"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Excel / CSV İndir
+        </button>
+      </div>
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">

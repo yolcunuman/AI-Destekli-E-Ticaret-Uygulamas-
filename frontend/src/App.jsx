@@ -1,5 +1,6 @@
 import { useState, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { CartProvider, useCart } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -21,6 +22,7 @@ const Register = lazy(() => import('./pages/Register'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const MyOrders = lazy(() => import('./pages/MyOrders'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
+const Profile = lazy(() => import('./pages/Profile'));
 
 function Navbar() {
   const { getCartCount } = useCart();
@@ -74,7 +76,12 @@ function Navbar() {
                       <Link to="/admin" className="text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors">Admin Paneli</Link>
                     )}
                     <span className="text-sm font-medium text-gray-400">|</span>
-                    <span className="text-sm font-medium text-gray-700">Hoş geldin, {user.adSoyad.split(' ')[0]}</span>
+                    <Link to="/profile" className="text-sm font-bold text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-1.5">
+                      <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-black text-xs border border-indigo-200">
+                        {user.adSoyad.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      {user.adSoyad.split(' ')[0]}
+                    </Link>
                     <button onClick={logout} className="text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                       Çıkış Yap
                     </button>
@@ -119,7 +126,12 @@ function Navbar() {
                   {user.rol === 'admin' && (
                     <Link to="/admin" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-indigo-600 bg-indigo-50 font-medium transition-colors">Admin Paneli</Link>
                   )}
-                  <div className="px-3 py-2 text-sm text-gray-500">Hoş geldin, {user.adSoyad.split(' ')[0]}</div>
+                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-indigo-600 bg-indigo-50 font-medium transition-colors flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-xs">
+                      {user.adSoyad.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    Profilim ({user.adSoyad.split(' ')[0]})
+                  </Link>
                   <button
                     onClick={() => { logout(); setMobileOpen(false); }}
                     className="w-full text-left px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 font-medium transition-colors"
@@ -191,11 +203,19 @@ function App() {
                     <Route path="/wishlist" element={<Wishlist />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/profile" element={<Profile />} />
                   </Routes>
                 </Suspense>
               </Layout>
             } />
           </Routes>
+          <Toaster 
+            position="top-right" 
+            toastOptions={{ 
+              duration: 3000, 
+              style: { background: '#363636', color: '#fff', fontWeight: 'bold', borderRadius: '12px', padding: '16px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)' } 
+            }} 
+          />
           <ChatBot />
         </BrowserRouter>
         </CartProvider>
