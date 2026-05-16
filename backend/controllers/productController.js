@@ -196,3 +196,45 @@ export const getRecommendations = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Açık artırmadaki ürüne teklif ver (Milestone 1.2)
+// @route   POST /api/products/:id/bid
+// @access  Private
+export const placeBid = async (req, res) => {
+  try {
+    const { teklifTutari } = req.body;
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Ürün bulunamadı' });
+    }
+
+    if (!product.acikArtirmadaMi) {
+      return res.status(400).json({ message: 'Bu ürün açık artırmada değil' });
+    }
+
+    // Süre dolmuş mu kontrolü
+    if (product.bitisTarihi && new Date() > new Date(product.bitisTarihi)) {
+      return res.status(400).json({ message: 'Bu açık artırmanın süresi dolmuştur' });
+    }
+
+    const mevcutEnYuksek = product.enYuksekTeklif || product.baslangicFiyati || product.fiyat;
+    if (Number(teklifTutari) <= mevcutEnYuksek) {
+      return res.status(400).json({ message: `Teklifiniz mevcut en yüksek tekliften (${mevcutEnYuksek} ₺) daha yüksek olmalıdır.` });
+    }
+
+    // En yüksek teklifi ve geçmişi güncelle
+    product.enYuksekTeklif = Number(teklifTutari);
+    product.teklifGecmisi.unshift({
+      kullanici: req.user._id,
+      adSoyad: req.user.adSoyad,
+      teklifTutari: Number(teklifTutari),
+      tarih: new Date()
+    });
+
+    const updatedProduct = await product.save();
+    res.json(updatedProduct);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

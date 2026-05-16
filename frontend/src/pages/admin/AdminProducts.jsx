@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -10,6 +11,34 @@ export default function AdminProducts() {
   });
   const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
+
+  const exportToCSV = (data, filename) => {
+    const bom = '\uFEFF';
+    if (!data || !data.length) {
+      toast.error('Dışa aktarılacak veri bulunamadı!');
+      return;
+    }
+    
+    const headers = Object.keys(data[0]).join(';');
+    const rows = data.map(row => {
+      return Object.values(row).map(val => {
+        if (val === null || val === undefined) return '';
+        const str = String(val).replace(/"/g, '""');
+        return `"${str}"`;
+      }).join(';');
+    }).join('\n');
+    
+    const csvContent = bom + headers + '\n' + rows;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(`📊 ${filename}.csv başarıyla dışa aktarıldı!`);
+  };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -130,17 +159,37 @@ export default function AdminProducts() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <h1 className="text-2xl font-bold text-gray-900">Ürün Yönetimi</h1>
-        <button
-          onClick={handleCreate}
-          className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Yeni Ürün Ekle
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button 
+            onClick={() => exportToCSV(
+              products.map(p => ({
+                Urun_ID: p._id,
+                Isim: p.isim,
+                Kategori: p.kategori,
+                Fiyat: `${p.fiyat} TL`,
+                Stok: p.stokSayisi,
+                Acik_Artirmada: p.acikArtirmadaMi ? 'Evet' : 'Hayir'
+              })), 'Artisana_Urunler_Raporu'
+            )}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 active:scale-95 transition-all"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Excel / CSV İndir
+          </button>
+          <button
+            onClick={handleCreate}
+            className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-md active:scale-95"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Yeni Ürün Ekle
+          </button>
+        </div>
       </div>
 
       {/* Edit Modal */}
